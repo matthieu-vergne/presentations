@@ -1,0 +1,1278 @@
+\documentclass[draft]{beamer}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{textcomp}
+\usepackage{color}
+\usepackage{contour}
+\usepackage{ulem}
+\usepackage{natbib}
+\usepackage{pgf}
+\usepackage{xspace}
+\xspaceaddexceptions{]\}}
+\usepackage{multirow}
+\usepackage{tikz}
+\usetikzlibrary{calc,positioning,arrows}
+\usepackage{ulem}
+\usepackage{hyperref}
+\usepackage[absolute,overlay]{textpos}
+% \usepackage{beamerthemeshadow}
+\usetheme{Warsaw}
+\usepackage{lmodern}
+\usepackage{mathtools}
+% \everymath{\displaystyle}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{pbox}
+% \usepackage[final]{listingsutf8}
+\usepackage[french]{babel}
+\usepackage[final]{listings}
+\usepackage{courier}
+\usepackage[outdir=./]{epstopdf}
+\usepackage{ifdraft}
+\setkeys{Gin}{draft=false}% force the display of graphics, even for draft mode
+
+\lstset{
+  language=Java,
+  basicstyle=\lst@ifdisplaystyle\scriptsize\fi\ttfamily,
+  commentstyle=\color[RGB]{63,127,95}\bfseries,
+  keywordstyle=\color[RGB]{127,0,85},
+  morekeywords={int,char,double,float,unsigned,void,bool},
+  % Highlight some keywords
+  classoffset=1,
+  morekeywords={>,<},
+  otherkeywords={>,<},
+  keywordstyle=\color[RGB]{0,0,0}\bfseries,
+  classoffset=0,
+  % End highlight
+  numbers=left,
+  stepnumber=1,
+  showstringspaces=false,
+  tabsize=2,
+  breaklines=false,
+  escapeinside={§}{§},% similar to $, but not $ to allow math inside
+  literate=%
+    {à}{{\`a}}1
+    {é}{{\'e}}1
+    {è}{{\`e}}1
+    {ê}{{\^e}}1
+    {ï}{{\"i}}1
+}
+\definecolor{errorcolor}{RGB}{254,67,161}
+\makeatletter
+\def\uwave{\bgroup\markoverwith{\lower4\p@\hbox{\sixly \textcolor{errorcolor}{\char58}}}\ULon}
+\font\sixly=lasy8
+\makeatother
+\newcommand{\javaerror}[1]{%
+  \uwave{#1}%
+}
+
+\usetikzlibrary{positioning}
+\makeatletter
+\def\normaljustify{%
+  \let\\\@centercr
+  \rightskip\z@skip
+  \leftskip\z@skip%
+  \parfillskip=0pt plus 1.0fil\relax
+}
+\makeatother
+
+% \join{-}{1,2,3} = 1-2-3
+\makeatletter
+\DeclareRobustCommand\join[2]{%
+  \def\first{}%
+  \def\list{#2}%
+%   \@onelevel@sanitize\list%
+  \@for\reserved:=\list\do{%
+    \ifx\first\empty%
+      \def\first{done}%
+    \else%
+      #1%
+    \fi%
+    \reserved%
+  }
+}
+\makeatother
+
+\mode<presentation>{
+  \usetheme{Berlin}
+  \setbeamercovered{invisible}
+  \defbeamertemplate*{footline}{shadow theme}{
+    \leavevmode
+    \hbox{
+      \begin{beamercolorbox}[wd=\paperwidth,ht=2.5ex,dp=1.125ex,leftskip=.3cm,rightskip=.3cm plus1fil]{title in head/foot}%
+	\usebeamerfont{title in head/foot}\insertshorttitle%
+	\hfill%
+	\href{http://creativecommons.org/publicdomain/zero/1.0/}{\includegraphics[height=6pt]{../cc-zero}}%
+	\qquad%
+	\insertframenumber{}/{}\inserttotalframenumber%
+      \end{beamercolorbox}
+    }
+    \hbox{
+      \begin{beamercolorbox}[wd=\paperwidth,ht=2.5ex,dp=1.125ex,leftskip=.3cm plus1fil,rightskip=.3cm]{author in head/foot}
+	\usebeamerfont{author in head/foot}\insertshortauthor\hfill\insertshortinstitute
+      \end{beamercolorbox}
+    }
+    \vskip0pt
+  }
+%   \addtobeamertemplate{frametitle}{}{
+%     \begin{textblock*}{30mm}(.8\textwidth,-7mm)
+%       \includegraphics[height=6mm,keepaspectratio]{figures/logo-fbk}
+%       \hfill
+%       \includegraphics[height=6mm,keepaspectratio]{figures/logo-ict}
+%     \end{textblock*}
+%   }
+  \setbeamerfont*{itemize/enumerate body}{size=\normalsize}
+  \setbeamerfont*{itemize/enumerate subbody}{size=\footnotesize,shape=\itshape}
+%   \setbeamertemplate{frametitle}[shadow]
+}
+
+\AtBeginSection[]{
+  \begin{frame}
+  \vfill
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center,shadow=true,rounded=true]{title}
+    \usebeamerfont{title}\insertsectionhead\par%
+  \end{beamercolorbox}
+  \vfill
+  \end{frame}
+}
+
+\newcommand{\email}[1]{\href{mailto:#1}{\nolinkurl{#1}}}
+\DeclareRobustCommand{\todo}[1]{\ifdraft{\textbf{\textcolor{red}{[#1]}}}{}}
+\newcommand\credits[2][]{%
+  \ifx&#1&%
+  \def\x{}
+  \else%
+  \def\x{{#1}: }
+  \fi%
+  \begingroup%
+  \renewcommand\thefootnote{}\footnote{{\x}{\textcopyright}#2}%
+  \addtocounter{footnote}{-1}%
+  \endgroup%
+}
+\def\newblock{\hskip .11em plus .33em minus .07em} %trick to avoid undefined command with bibtex
+\def\randomSeed{1138}
+
+\title{Java Generics\todo{40min}}
+\author[Matthieu Vergne\qquad\email{matthieu.vergne@meritis.fr}]{
+  \texorpdfstring{
+    \textbf{Matthieu Vergne}
+  }{Matthieu Vergne}
+}
+\institute[Meritis PACA]{
+  Les Algorithmes - Aristote B\\
+  2000 Route des Lucioles\\
+  06901  Sophia Antipolis Cedex\\
+  ~\\
+  \includegraphics[height=15mm,keepaspectratio]{../logo-meritis.jpg}
+}
+\date{TBD}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}
+\frametitle{Outline}
+\tableofcontents[hideallsubsections]
+\end{frame}
+
+\section{Introduction}
+\subsection{}
+
+\begin{frame}
+\frametitle{Résumé}
+\begin{itemize}
+ \item \todo{}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Contexte pre-Java 5}
+\begin{onlyenv}<+>
+\begin{lstlisting}
+void doSomething() {
+  List numbers = new List();
+  numbers.add(123);
+  numbers.add(456);
+  String result = concat(numbers);
+  System.out.println(result);
+}
+
+String concat(List strings) {
+  String result = "";
+  for(int i = 0; i < strings.size(); i++) {
+    result += (String) strings.get(i);
+  }
+  return result;
+}
+\end{lstlisting}
+\end{onlyenv}
+\begin{onlyenv}<+>
+\begin{lstlisting}
+void doSomething() {
+  List numbers = new List();
+  numbers.add(123);
+  numbers.add(456);
+  String result = concat(numbers); // Compile
+  System.out.println(result);
+}
+
+String concat(List strings) {
+  String result = "";
+  for(int i = 0; i < strings.size(); i++) {
+    result += (String) strings.get(i); // Mais échoue ici
+  }
+  return result;
+}
+\end{lstlisting}
+\end{onlyenv}
+\end{frame}
+
+\begin{frame}
+\frametitle{Constat}
+\begin{alertblock}{Problèmes}
+ \begin{itemize}
+  \item Contrôle à l'exécution
+  \item Casts systématiques
+  \item Classes spécifiques possibles, mais trop répétitives
+ \end{itemize}
+\end{alertblock}
+\begin{exampleblock}{Solution: generics}
+ Les generics Java sont un moyen de dire au compilateur le type attendu, de façon à ce qu'il effectue lui-même ces contrôles avant la moindre exécution :
+ \begin{itemize}
+  \item Contrôle à la compilation $\Rightarrow$ visible immédiatement
+  \item Type connu $\Rightarrow$ cast inutile
+  \item N'importe quel type $\Rightarrow$ classe spécifique inutile
+ \end{itemize}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Example}
+\begin{onlyenv}<+>
+Avant :
+\begin{lstlisting}
+void doSomething() {
+  List numbers = new List();
+  numbers.add(123);
+  numbers.add(456);
+  String result = concat(numbers); // Compile
+  System.out.println(result);
+}
+
+String concat(List strings) {
+  String result = "";
+  for(int i = 0; i < strings.size(); i++) {
+    result += (String) strings.get(i); // Mais échoue ici
+  }
+  return result;
+}
+\end{lstlisting}
+\end{onlyenv}
+\begin{onlyenv}<+>
+Après :
+\begin{lstlisting}
+void doSomething() {
+  List<Integer> numbers = new List<>(); // Fournit Integer
+  numbers.add(123);
+  numbers.add(456);
+  String result = §\javaerror{concat(numbers)}§; // Ne compile pas
+  System.out.println(result);
+}
+
+String concat(List<String> strings) { // Demande String
+  String result = "";
+  for(int i = 0; i < strings.size(); i++) {
+    result += strings.get(i); // Plus besoin de cast
+  }
+  return result;
+}
+\end{lstlisting}
+\end{onlyenv}
+\end{frame}
+
+\section{Cas d'usage : processing distribué}
+
+\subsection{Alignement des champs d'une classe}
+
+\begin{frame}[fragile]
+\frametitle{Contexte}
+\begin{block}{Création d'une paire d'objets de même type}
+ Deux éléments de même type doivent être renvoyés par une méthode.
+ Java n'a pas de \lstinline{return} multiple, on doit donc utiliser un conteneur.
+ Une \lstinline{List} n'a pas de taille fixe, on fera donc une classe \lstinline{Pair}.
+ Il faut pouvoir traiter différents types pour l'utiliser dans différents contextes.
+\end{block}
+\begin{lstlisting}
+class Pair {
+  Object first;
+  Object second;
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Problème}
+\begin{alertblock}{Manque de contrôles}
+ \begin{itemize}
+  \item Pas de contrainte de type entre les champs
+  \item Cast obligatoire à la lecture
+ \end{itemize}
+\end{alertblock}
+\begin{lstlisting}
+// int + String = non voulu mais compile
+Pair pair = new Pair();
+pair.first = 123;
+pair.second = "bar";
+
+// Lecture nécessite cast
+Pair strings = new Pair();
+strings.first = "foo";
+String first = (String) strings.first;
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Solution}
+\begin{exampleblock}{Generics pour les champs}
+\begin{lstlisting}[numbers=none]
+class Pair<T> {
+  T first;
+  T second;
+}
+\end{lstlisting}
+\end{exampleblock}
+\begin{lstlisting}
+Pair<Integer> pair = new Pair<>(); // Demande Integer
+pair.first = 123;
+pair.second = §\javaerror{"bar"}§; // Ne compile pas
+
+Pair<String> strings = new Pair<>();
+strings.first = "foo";
+String first = strings.first; // Pas de cast
+\end{lstlisting}
+\end{frame}
+
+\subsection{Alignement des méthodes d'une interface}
+
+\begin{frame}[fragile]
+\frametitle{Contexte}
+\begin{block}{Permettre différentes implémentations de \lstinline{Pair}}
+ On souhaite lire les valeurs de différentes manières : valeurs fixes, variables, reprises d'autres objets, etc.
+ On définit l'interface commune, chaque implémentation décidera de quoi mettre derrière.
+\end{block}
+\begin{lstlisting}
+interface Pair {
+  Object getFirst();
+  Object getSecond();
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Problème}
+\begin{alertblock}{Manque de contrôles}
+ \begin{itemize}
+  \item Pas de contrainte de type entre les méthodes
+  \item Cast obligatoire à l'appel
+ \end{itemize}
+\end{alertblock}
+\begin{lstlisting}
+// int + String = non voulu mais compile
+Pair pair = new Pair() {
+  public Object getFirst() {return 123;}
+  public Object getSecond() {return "bar";}
+};
+
+// Lecture nécessite cast
+Pair strings = new Pair() {...};
+String first = (String) strings.getFirst();
+String second = (String) strings.getSecond();
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Solution}
+\begin{onlyenv}<+>
+\begin{exampleblock}{Generics pour les méthodes}
+\begin{lstlisting}[numbers=none]
+interface Pair<T> {
+  T getFirst();
+  T getSecond();
+}
+\end{lstlisting}
+\end{exampleblock}
+\begin{lstlisting}
+Pair<Integer> pair = new Pair<Integer>() { // Demande Integer
+  public Integer getFirst() {return 123;}
+  public Integer getSecond() {return §\javaerror{"bar"}§;} // Ne compile pas
+};
+
+Pair<String> strings = new Pair<String>() {...};
+String first = strings.getFirst();   // Pas de cast
+String second = strings.getSecond(); // Pas de cast
+\end{lstlisting}
+\end{onlyenv}
+\begin{onlyenv}<+>
+On pourra utiliser l'implémentation suivante :
+\begin{lstlisting}
+class FinalPair<T> implements Pair<T> {
+  private final T first;
+  private final T second;
+
+  public FinalPair(T first, T second) {
+    this.first = first;
+    this.second = second;
+  }
+
+  public T getFirst() {return first;}
+  public T getSecond() {return second;}
+}
+\end{lstlisting}
+\end{onlyenv}
+\end{frame}
+
+\subsection{Consommation de generics}
+
+\begin{frame}[fragile]
+\frametitle{Contexte}
+\begin{block}{Affichage d'une \lstinline{Pair}}
+ On veut un \lstinline{Pair.toString()} qui affiche ses 2 éléments.
+ \lstinline{Pair} étant une interface, on ne peut directement l'y implémenter.
+ On y crée une méthode \lstinline{static} utilisable dans n'importe quelle implémentation.
+\end{block}
+\begin{lstlisting}
+static String toString(Pair<Object> p) {
+  return String.format("(%s,%s)", p.getFirst(), p.getSecond());
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Problème}
+\begin{alertblock}{N'accepte que des \lstinline{Pair<Object>}}
+ L'héritage ne s'applique pas automatiquement dans les generics :
+ \begin{itemize}
+  \item \lstinline{<Object>} n'accepte que \lstinline{<Object>}
+  \item \lstinline{<String>} n'accepte que \lstinline{<String>}
+  \item etc.
+ \end{itemize}
+\end{alertblock}
+\begin{lstlisting}
+// Aucun type ne compile en dehors de Object
+§\javaerror{toString}§(new FinalPair<Integer>(1, 2));
+§\javaerror{toString}§(new FinalPair<String>("a", "b"));
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Solution}
+\begin{onlyenv}<+>
+\begin{exampleblock}{Wildcard \lstinline{\?}}
+\begin{lstlisting}[numbers=none]
+static String toString(Pair<?> p) {
+  return String.format("(%s,%s)", p.getFirst(), p.getSecond());
+}
+\end{lstlisting}
+\end{exampleblock}
+\begin{lstlisting}
+toString(new FinalPair<Integer>(1, 2));
+toString(new FinalPair<String>("a", "b"));
+\end{lstlisting}
+\texttt{\bf\color{red}/!\textbackslash} \lstinline{Pair p} (\textit{raw type}) revient à désactiver tout contrôle (rétrocompatibilité pré-Java 5).
+Ne jamais utiliser !
+\end{onlyenv}
+\begin{onlyenv}<+>
+Exemple:\todo{Préciser les raisons exactes}
+\begin{lstlisting}
+List<HashMap> list = ...
+List<Map<?, ?>> linkedList = new LinkedList<>(list); // OK
+\end{lstlisting}
+\begin{lstlisting}
+List<HashMap> list = ...
+List<Map<?, ?>> linkedList = new LinkedList<Map<?, ?>>(list); // KO
+\end{lstlisting}
+Due au ``raw type" (HashMap).
+Si on corrige (\lstinline{HashMap< ?, ?>}) pas de soucis, mais le \lstinline{…} doit effectivement renvoyer quelque chose de compatible.
+Un parseur par exemple, qui prendrait un \lstinline{HashMap.class} pour instancier, ne pourrait pas.
+\todo{Parler de la traduction, dans notre cas un \lstinline{list.stream.map(...).collect(...)} permet de typer correctement}
+\end{onlyenv}
+\begin{onlyenv}<+>
+On pourra compléter notre implémentation comme suit :
+\begin{lstlisting}
+class FinalPair<T> implements Pair<T> {
+  ...
+  public String toString() {return Pair.toString(this);}
+}
+\end{lstlisting}
+\end{onlyenv}
+\end{frame}
+
+\subsection{Alignement des types d'une méthode}
+
+\begin{frame}[fragile]
+\frametitle{Contexte}
+\begin{block}{Abstraction des opérations sur une paire d'éléments}
+ On transforme 2 éléments en 1 seul, comme sommer des entiers, concaténer des \lstinline{Strings}, etc.
+ Les 3 éléments ont un type quelconque, mais le même type pour permettre des exécutions à la chaîne.
+ On pourra par exemple sommer toute une liste d'entiers en les sommant deux à la fois.
+\end{block}
+\begin{lstlisting}
+interface Computer {
+  Object compute(Object o1, Object o2);
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Problème}
+\begin{alertblock}{Manque de contrôles}
+ \begin{itemize}
+  \item Pas de contrainte de type entre les éléments
+  \item Cast obligatoire dans l'implémentation
+  \item Cast obligatoire à l'appel
+ \end{itemize}
+\end{alertblock}
+\begin{lstlisting}
+Computer ints = new Computer() {
+  public Object compute(Object o1, Object o2) {
+    return ((int) o1) + ((int) o2); // Casts
+  }
+};
+int i = (int) ints.compute(1, 2); // Cast
+
+// Mauvais types partout, mais compile
+String s = (String) ints.compute("a", new Object());
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Solution}
+\begin{exampleblock}{Generics pour tous les éléments}
+\begin{lstlisting}[numbers=none]
+interface Computer<T> {
+  T compute(T t1, T t2);
+}
+\end{lstlisting}
+\end{exampleblock}
+\begin{lstlisting}
+Computer<Integer> ints = new Computer<Integer>() {
+  public Integer compute(Integer i1, Integer i2) {
+    return i1 + i2; // Sans cast
+  }
+};
+int i = ints.compute(1, 2); // Sans cast
+
+int j = ints.§\javaerror{compute}§("a", 2);  // Mauvaise entrée
+String l = §\javaerror{ints.compute(1, 2)}§; // Mauvaise sortie
+\end{lstlisting}
+\end{frame}
+
+\subsection{Alignement avec des generics d'autres classes}
+
+\begin{frame}[fragile]
+\frametitle{Contexte}
+\begin{block}{On s'appuie sur l'interface \lstinline{Pair<T>}}
+ \lstinline{Pair<T>} met déjà en place du contrôle à la compilation.
+ On remplace donc les 2 entrées de \lstinline{compute} par une unique \lstinline{Pair<T>}.
+\end{block}
+\begin{lstlisting}
+interface Computer {
+  Object compute(Pair<?> pair);
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Problème}
+\begin{alertblock}{Contrôle incomplet}
+ L'usage de \lstinline{Pair<T>} garantie l'alignement des entrées.
+ Mais on n'en connait pas le type, obligeant le cast dans l'implémentation.
+ La sortie n'est pas non plus connue, obligeant le cast aussi.
+\end{alertblock}
+\begin{lstlisting}
+Computer ints = new Computer() {
+  public Object compute(Pair<?> pair) {
+    return (int) pair.getFirst()   // Cast entrée
+         + (int) pair.getSecond(); // Cast entrée
+  }
+};
+int i = (int) ints.compute(new FinalPair<>(1, 2)); // Cast sortie
+
+// Mauvais type de sortie = compile quand même
+String s = (String) ints.compute(new FinalPair<>(1, 2));
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Solution}
+\begin{onlyenv}<+>
+\begin{exampleblock}{Generics pour entrée et sortie}
+\begin{lstlisting}[numbers=none]
+interface Computer<T> {
+  T compute(Pair<T> pair);
+}
+\end{lstlisting}
+\end{exampleblock}
+\begin{lstlisting}
+Computer<Integer> ints = new Computer<Integer>() {
+  public Integer compute(Pair<Integer> pair) {
+    return pair.getFirst() + pair.getSecond(); // Sans cast
+  }
+};
+int i = ints.compute(new FinalPair<>(1, 2)); // Sans cast
+
+// Mauvais type de sortie = ne compile pas
+String l = §\javaerror{ints.compute(new FinalPair<>(1, 2))}§;
+\end{lstlisting}
+\end{onlyenv}
+\begin{onlyenv}<+>
+On pourra lui donner des implémentations spécifiques :
+\begin{lstlisting}
+// Somme d'entiers
+class SumComputer implements Computer<Integer> {
+  public Integer compute(Pair<Integer> pair) {
+    return pair.getFirst() + pair.getSecond();
+  }
+}
+new SumComputer().compute(new FinalPair<Integer>(1, 2));
+new SumComputer().§\javaerror{compute}§(new FinalPair<String>("a", "b"));
+// Concatènation de Strings
+class ConcatComputer implements Computer<String> {
+  public String compute(Pair<String> pair) {
+    return pair.getFirst() + pair.getSecond();
+  }
+}
+new ConcatComputer().§\javaerror{compute}§(new FinalPair<Integer>(1, 2));
+new ConcatComputer().compute(new FinalPair<String>("a", "b"));
+\end{lstlisting}
+\end{onlyenv}
+\begin{onlyenv}<+>
+On pourra lui donner des implémentations génériques :
+\begin{lstlisting}
+// Extraction du premier élément d'une Pair quelconque
+class ExtractComputer<T> implements Computer<T> {
+  public T compute(Pair<T> pair) {
+    return pair.getFirst();
+  }
+}
+\end{lstlisting}
+Le point clé est l'ajout d'un generics pour assurer le lien des types d'entrée-sortie sans lui donner de valeur particulière.
+Cela oblige néanmoins à créer une instance pour chaque type de \lstinline{Pair} :
+\begin{lstlisting}
+new ExtractComputer<Integer>().compute(new FinalPair<>(1, 2));
+new ExtractComputer<String>().compute(new FinalPair<>("a", "b"));
+\end{lstlisting}
+\end{onlyenv}
+\end{frame}
+
+\subsection{Alignement de scope méthode}
+
+\begin{frame}[fragile]
+\frametitle{Contexte}
+\begin{block}{Opérations distribuées}
+ Les opérations ne doivent pas être exécutées localement.
+ Elles doivent être exécutées sur plusieurs machines cibles.
+ Chaque machine doit pouvoir traiter n'importe quelle demande.
+ Contraindre une cible à 1 seul type (\lstinline{Target<T>}) n'est donc pas souhaitable.
+\end{block}
+\begin{lstlisting}
+interface Target {
+  void dispatch(Pair<?> pair, Computer<?> computer);
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Problème}
+\begin{alertblock}{Inexploitable}
+ La \lstinline{Pair} et le \lstinline{Computer} son typés mais inconnus (\lstinline{<?>}).
+ Impossible de les faire interagir, car ils pourraient être incompatibles (e.g. \lstinline{Pair<Integer>} et \lstinline{Computer<String>}).
+\end{alertblock}
+\begin{lstlisting}
+Target target = new Target() {
+  public void dispatch(Pair<?> pair, Computer<?> computer) {
+    // Cette ligne devrait être envoyée à la cible.
+    // On l'exécute ici par simplicité.
+    computer.§\javaerror{compute}§(pair); // Ne compile pas
+  }
+};
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Solution}
+\begin{onlyenv}<+>
+\begin{exampleblock}{Generics commun sur la méthode}
+\begin{lstlisting}[numbers=none]
+interface Target {
+  <T> void dispatch(Pair<T> pair, Computer<T> computer);
+}
+\end{lstlisting}
+\end{exampleblock}
+\begin{lstlisting}
+Target target = new Target() {
+  public <T> void dispatch(Pair<T> pair, Computer<T> computer) {
+    // Cette ligne devrait être envoyée à la cible.
+    // On l'exécute ici par simplicité.
+    computer.compute(pair);
+  }
+};
+\end{lstlisting}
+\end{onlyenv}
+\begin{onlyenv}<+>
+On s'assurera que la distribution est correctement contrainte :
+\begin{lstlisting}
+FinalPair<Integer> intPair = new FinalPair<>(1, 2);
+target.dispatch(intPair, new SumComputer());
+target.§\javaerror{dispatch}§(intPair, new ConcatComputer()); // Integer != String
+target.dispach(intPair, new ExtractComputer<>());
+
+FinalPair<String> strPair = new FinalPair<>("a", "b");
+target.§\javaerror{dispatch}§(strPair, new SumComputer());    // String != Integer
+target.dispatch(strPair, new ConcatComputer());
+target.dispatch(strPair, new ExtractComputer<>());
+\end{lstlisting}
+\end{onlyenv}
+\begin{onlyenv}<+>
+S'applique aussi aux constructeurs :
+\begin{lstlisting}
+class Dispatcher {
+  Runnable preparedDispatch;
+  
+  <T> Dispatcher(Pair<T> pair, Computer<T> computer, Target target) {
+    preparedDispatch = () -> target.dispatch(pair, computer);
+  }
+  
+  void run() {
+    preparedDispatch.run();
+  }
+}
+\end{lstlisting}
+Generics inutile au niveau de la classe, car aligne uniquement des paramètres du constructeur.
+\end{onlyenv}
+\end{frame}
+
+\subsection{Défaut}
+
+\begin{frame}[fragile]
+\frametitle{Contexte}
+\todo{? extends X}
+\todo{? super X}
+\todo{cheat sheet, diagramme question-réponse}
+\begin{block}{\todo{todo}}
+ \todo{todo}
+\end{block}
+\begin{lstlisting}
+// TODO
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Problème}
+\begin{alertblock}{\todo{todo}}
+ \todo{todo}
+\end{alertblock}
+\begin{lstlisting}
+// TODO
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Solution}
+\begin{exampleblock}{\todo{todo}}
+\begin{lstlisting}[numbers=none]
+// TODO
+\end{lstlisting}
+\end{exampleblock}
+\begin{lstlisting}
+// TODO
+\end{lstlisting}
+\end{frame}
+
+\section{Usages avancés}
+
+\subsection{Cas 1}
+
+\begin{frame}[fragile]
+\frametitle{Contexte}
+\begin{block}{\todo{todo}}
+ \todo{todo}
+\end{block}
+\begin{lstlisting}
+// TODO
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Problème}
+\begin{alertblock}{\todo{todo}}
+ \todo{todo}
+\end{alertblock}
+\begin{lstlisting}
+// TODO
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Solution}
+\begin{exampleblock}{\todo{todo}}
+\begin{lstlisting}[numbers=none]
+// TODO
+\end{lstlisting}
+\end{exampleblock}
+\begin{lstlisting}
+// TODO
+\end{lstlisting}
+\end{frame}
+
+\subsection{Défaut}
+
+\begin{frame}[fragile]
+\frametitle{Contexte}
+\todo{\lstinline{Pair<Collection>}, mais \lstinline{List getFirst()}}
+\todo{et-commercial pour combinaison d'interfaces + abstract}
+\begin{block}{\todo{todo}}
+ \todo{todo}
+\end{block}
+\begin{lstlisting}
+// TODO
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Problème}
+\begin{alertblock}{\todo{todo}}
+ \todo{todo}
+\end{alertblock}
+\begin{lstlisting}
+// TODO
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Solution}
+\begin{exampleblock}{\todo{todo}}
+\begin{lstlisting}[numbers=none]
+// TODO
+\end{lstlisting}
+\end{exampleblock}
+\begin{lstlisting}
+// TODO
+\end{lstlisting}
+\end{frame}
+
+\section{Pièges}
+
+\subsection{Cas précédents}
+
+\begin{frame}
+\frametitle{Résumé}
+\begin{table}
+  \begin{tabular}{|c|c|c|l}
+    \cline{1-3}
+    Scope                    & Cas             & Vu \\
+    \cline{1-3}
+    \multirow{2}{*}{Méthode} & Param-param     & x  & $\leftarrow$ Piège\\
+    \cline{2-3}
+    ~                        & Param-return    & o  \\
+    \cline{1-3}
+    N méthodes               & Méthode-méthode & o  \\
+    \cline{1-3}
+    \multirow{2}{*}{Classe}  & 1 méthode       & o  \\
+    \cline{2-3}
+    ~                        & N méthodes      & o  \\
+    \cline{1-3}
+  \end{tabular}
+\end{table}
+\end{frame}
+
+\subsection{Param-param}
+
+\begin{frame}[fragile]
+\frametitle{Idée}
+\begin{block}{Comparateur de fichier intelligent (diff)}
+ Une application graphique capable de comparer différents types de fichiers.
+ L'interface affiche un fichier à gauche et l'autre, du même type, à droite.
+ Elle met en avant les différences en fonction d'algorithmes de comparaison de votre cru.
+\end{block}
+\begin{lstlisting}
+interface Displayer {
+  void load(File file);
+}
+
+class TxtDisplayer implements Displayer {...}
+class XmlDisplayer implements Displayer {...}
+...
+
+<D extends Displayer> // Generics pour forcer le même type
+void feed(D leftDisplayer, D rightDisplayer);
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Piège}
+\begin{alertblock}{Le generics n'interdit pas les types parents}
+ La résolution du type se fait au plus spécifique que possible.
+ Cependant, elle abstrait tant que nécessaire.
+ Au pire, elle prend au plus générique, même \lstinline{Object}.
+\end{alertblock}
+\begin{lstlisting}
+// D = TxtDisplayer
+feed(txtDisplayerLeft, txtDisplayerRight);
+
+// D = XmlDisplayer
+feed(xmlDisplayerLeft, xmlDisplayerRight);
+
+// D = Displayer <- permet de compiler
+feed(txtDisplayerLeft, xmlDisplayerRight);
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Solution}
+\begin{exampleblock}{Generics explicite}
+ Il faut forcer le generics si on sait quel type on veut.
+\end{exampleblock}
+\begin{lstlisting}
+// D = XmlDisplayer <- ne compile pas avec TxtDisplayer
+this.<XmlDisplayer>§\javaerror{feed}§(txtDisplayerLeft, xmlDisplayerRight);
+\end{lstlisting}
+\begin{exampleblock}{Délégation à l'appelant}
+ Si on ne connaît pas le type ici, c'est une méthode appelante qui doit le connaître.
+\end{exampleblock}
+\begin{lstlisting}
+<D extends Displayer> void buildScreen(D left, D right) {
+  feed(left, right);
+}
+this.<XmlDisplayer>§\javaerror{buildScreen}§(txtDisplayerLeft, xmlDisplayerRight);
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Generics inutile ?}
+Au même niveau : generics explicite + arguments bien choisis
+\begin{lstlisting}
+this.<XmlDisplayer>feed(xmlDisplayerLeft, xmlDisplayerRight);
+\end{lstlisting}
+Simplification possible : retrait du generics
+\begin{lstlisting}
+void feed(Displayer leftDisplayer, Displayer rightDisplayer) {...}
+feed(xmlDisplayerLeft, xmlDisplayerRight);
+\end{lstlisting}
+Remplacer un argument par un \lstinline{TxtDisplayer} ne compile pas dans le premier cas mais compile dans le second.
+L'ajout du generics permet de découpler l'information de type (generics) et de valeur (arguments).
+Il faut cependant penser à l'expliciter pour que ce soit utile.
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Piège valable sur Generics aussi}
+\todo{Même section ou nouvelle ?}
+\begin{lstlisting}
+toString(Pair<Object> p) {...}
+
+// Compile
+toString(new FinalPair<>(1, 2));
+toString(new FinalPair<>("a", "b"));
+\end{lstlisting}
+\begin{alertblock}{\lstinline{<>} prend ce qui l'arrange pour que ça compile}
+ \begin{itemize}
+  \item \lstinline{FinalPair<>(1, 2)} $\rightarrow$ \lstinline{<Integer>} ou parent
+  \item \lstinline{FinalPair<>("a", "b")} $\rightarrow$ \lstinline{<String>} ou parent
+  \item \lstinline{toString()} $\rightarrow$ uniquement \lstinline{<Object>}
+  \item \lstinline{<Object>} est retenu pour les deux car seul compilable
+ \end{itemize}
+\end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Solution}
+\begin{exampleblock}{Expliciter au moins une fois}
+ Ne pas utiliser \lstinline{<>} si le type n'est donné nulle part dans l'instruction.
+\end{exampleblock}
+\begin{lstlisting}
+// Si seul présent, <> devrait être explicité
+§\javaerror{toString}§(new FinalPair<Integer>(1, 2));
+
+// Précisé par la variable, donc <> acceptable
+Pair<Integer> pair = new FinalPair<>(1, 2)
+§\javaerror{toString}§(pair);
+
+// Précisé par 1 argument, le second doit s'aligner
+<T> toString(Pair<T> p1, Pair<T> p2) {...}
+§\javaerror{toString}§(new FinalPair<Integer>(1, 2), §\javaerror{new FinalPair<>("a", "b")}§);
+\end{lstlisting}
+\end{frame}
+
+\subsection{Défaut}
+
+\begin{frame}[fragile]
+\frametitle{Idée}
+\todo{generics perdu à l'exécution : tout comme sans generics, ne permet pas plusieurs implémentations}
+\todo{\lstinline{compute(Pair pair)} et \lstinline{compute(Pair<Object> pair)} acceptent \lstinline{new FinalPair<>(1,2)} alors que c'est un \lstinline{Pair<Integer>} : faux, la méthode impose \lstinline{Pair<Object>} , donc il interpréte \lstinline{new FinalPair<Object>(1,2)}, il l'accepte donc parce que \lstinline{Object} peut prendre n'importe quoi, y compris des entiers. Si on écrit explicitement \lstinline{new FinalPair<Integer>(1,2)} ça ne compile plus.}
+\todo{dans lambda, scope méthode peut devoir être explicité, y compris avec this}
+\todo{"interface Computer<T> {<U extends T> U compute(Pair<U> pair);}" et autres définitions pas toujours possibles à implémenter.}
+\begin{block}{\todo{todo}}
+ \todo{todo}
+\end{block}
+\begin{lstlisting}
+// TODO
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Piège}
+\begin{alertblock}{\todo{todo}}
+ \todo{todo}
+\end{alertblock}
+\begin{lstlisting}
+// TODO
+\end{lstlisting}
+\begin{center}
+ \todo{conclusion}
+\end{center}
+\end{frame}
+
+\section{Conclusion}
+\subsection{}
+
+\begin{frame}
+\frametitle{Résumé}
+\todo{}
+\end{frame}
+
+\begin{frame}
+\frametitle{Aller plus loin}
+\begin{itemize}
+ \item Generics (Oracle) : \url{https://docs.oracle.com/javase/tutorial/java/generics/index.html}
+ \item \todo{}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\begin{center}
+Thanks for your attention.\\
+~\\
+Questions?\\
+% \nocite{*}
+\end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]
+\frametitle{Scope Méthode}
+\todo{Faire 1 slide/cas : contexte, problème, solution avec generics}
+\begin{onlyenv}<+>
+Même type de paramètres :
+\begin{lstlisting}
+<T> void f(T t1, T t2);
+
+f(string1, string2); // OK
+f(int1, int2);       // OK
+f(string1, int2);    // Ne compile pas
+\end{lstlisting}
+\end{onlyenv}
+\begin{onlyenv}<+>
+Même type de sortie que d'entrée :
+\begin{lstlisting}
+<T> T f(T t);
+
+String s2 = f(s1); // OK
+int i2 = f(i1);    // OK
+int i2 = f(s1);    // Ne compile pas
+\end{lstlisting}
+\end{onlyenv}
+\begin{onlyenv}<+>
+N'importe quelle combinaison :
+\begin{lstlisting}
+<T> T f(String s, T t1, int i, T t2);
+
+String s3 = f("", s1, 0, s2); // OK
+int i3 = f("", i1, 0, i2);    // OK
+int i3 = f("", s1, 0, i2);    // Ne compile pas
+\end{lstlisting}
+\end{onlyenv}
+\begin{onlyenv}<+>
+Types spécifiques : \lstinline{extends}
+\begin{lstlisting}
+class A {...}
+class B extends A {...}
+class C extends B {...}
+
+<T extends B> T f(T t1, T t2);
+
+A a = f(new A(), new A()) // Ne compile pas, A pas un B
+B b = f(new B(), new B()) // OK, T = B
+C c = f(new C(), new C()) // OK, T = C qui est un B
+B b = f(new B(), new C()) // OK, T = B pour accepter B et C
+\end{lstlisting}
+Si on enlevait T pour avoir \lstinline{B f(B b1, B b2)} directement, on retournerait toujours \lstinline{B}, même à la ligne 9.
+\end{onlyenv}
+\begin{onlyenv}<+>
+Types spécifiques : \lstinline{super}
+\todo{todo}
+\end{onlyenv}
+\begin{onlyenv}<+>
+Plusieurs types :
+\begin{lstlisting}
+<T, U> U f(T t1, T t2, U u);
+
+String s2 = f(i1, i2, s1); // OK
+String i2 = f(s1, s2, i1); // OK
+String s4 = f(s1, s2, s3); // OK, même si T = U
+\end{lstlisting}
+\end{onlyenv}
+\begin{onlyenv}<+>
+Points d'attention :
+\begin{itemize}
+ \item Generics pour 1 élément -> remplacer par Object
+\end{itemize}
+\end{onlyenv}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Méthodes multiples ?}
+\begin{onlyenv}<+>
+\begin{lstlisting}
+class C {
+ <T> void f1(T t); // Son propre type T
+ <T> void f2(T t); // Son propre type T
+}
+
+C c = new C();
+c.f1(string1); c.f2(string2); // OK
+c.f1(int1); c.f2(int2);       // OK
+c.f1(string1); c.f2(int2);    // OK aussi !
+\end{lstlisting}
+Les types ne sont pas liés entre méthodes.
+Impossible de les lier sans savoir quand un changement de type est acceptable.
+\end{onlyenv}
+\begin{onlyenv}<+>
+Ajouter un patron de méthode\footnote<.>{\url{https://fr.wikipedia.org/wiki/Patron_de_m\%C3\%A9thode}} pour lier les types :
+\begin{lstlisting}
+class C {
+ <T> void f1(T t);               // Son propre type T
+ <T> void f2(T t);               // Son propre type T
+ <T> void f1_et_f2(T t1, T t2) { // Son propre type T
+  f1(t1); // Utilise T de f1_et_f2 sur f1
+  f2(t2); // Utilise T de f1_et_f2 sur f2
+ }
+}
+
+C c = new C();
+c.f1_et_f2(string1, string2); // OK
+c.f1_et_f2(int1, int2);       // OK
+c.f1_et_f2(string1, int2);    // Ne compile pas
+\end{lstlisting}
+\end{onlyenv}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Scope Classe}
+\begin{onlyenv}<+>
+Un type par instance :
+\begin{lstlisting}
+class C<T> {
+ void f1(T t); // Type T commun
+ void f2(T t); // Type T commun
+}
+
+C<String> c = new C<>();
+c.f1(myString);c.f2(myString); // OK
+c.f1(myInt);c.f2(myInt);       // Ne compilent pas
+
+C<Integer> c = new C<>();
+c.f1(myString);c.f2(myString); // Ne compilent pas
+c.f1(myInt);c.f2(myInt);       // OK
+\end{lstlisting}
+\end{onlyenv}
+\begin{onlyenv}<+>
+N'importe quelle combinaison :
+\begin{lstlisting}
+<T> T f(String s, T t1, int i, T t2);
+
+String s3 = f("", s1, 0, s2); // OK
+int i3 = f("", i1, 0, i2);    // OK
+int i3 = f("", s1, 0, i2);    // Ne compile pas
+\end{lstlisting}
+\end{onlyenv}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Utiliser le bon scope}
+\begin{onlyenv}<+>
+La même instance peut être utilisée avec différents types :
+\begin{lstlisting}
+class C {
+ <T> void f(T t); // Utiliser un scope méthode
+}
+\end{lstlisting}
+~\\
+Exemple :
+\begin{lstlisting}
+class Reader {
+ <T> T readFirst(List<T> list) {
+  return list.get(0);
+ }
+}
+
+Reader r = new Reader();
+r.readFirst(Arrays.asList(1, 2, 3));       // 1
+r.readFirst(Arrays.asList("a", "b", "c")); // a
+\end{lstlisting}
+\end{onlyenv}
+\begin{onlyenv}<+>
+La même instance doit être utilisée avec le même type :
+\begin{lstlisting}
+class C<T> { // Utiliser un scope classe
+ void f(T t);
+}
+\end{lstlisting}
+~\\
+Exemple :
+\begin{lstlisting}
+class Reader<T> {
+ T readFirst(List<T> list) {
+  return list.get(0);
+ }
+}
+
+Reader<Integer> r = new Reader<>();
+r.readFirst(Arrays.asList(1, 2, 3));       // 1
+r.readFirst(Arrays.asList("a", "b", "c")); // Ne compile pas
+\end{lstlisting}
+\end{onlyenv}
+\begin{onlyenv}<+>
+Si le type doit être partagé entre plusieurs méthodes :
+\begin{itemize}
+ \item Scope classe impose une instance par type
+\begin{lstlisting}
+class C<T> {
+ void f1(T t1);
+ void f2(T t2);
+}
+\end{lstlisting}
+\end{itemize}
+\end{onlyenv}
+\end{frame}
+
+\appendix
+\newcounter{finalframe}
+\setcounter{finalframe}{\value{framenumber}}
+
+\scriptsize
+\input{biblio}
+\normalsize
+
+\begin{frame}
+\frametitle{Summary}
+\todo{todo}
+\end{frame}
+
+\setcounter{framenumber}{\value{finalframe}}
+\end{document}
