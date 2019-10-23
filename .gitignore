@@ -1,0 +1,11 @@
+# Fichiers générés
+*.aux
+*.backup
+*.log
+*.nav
+*.out
+*.snm
+*.toc
+*.vrb
+*-converted-to.pdf
+presentation.pdf
