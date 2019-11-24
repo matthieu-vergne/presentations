@@ -1,0 +1,34 @@
+Outils - Ce qui est possible
+	Polymorphisme ad hoc - Surcharge et coercion
+	Polymorphisme universel - Paramétrique (Generics) et inclusion (héritage)
+Objectifs - Ce qu'on veut
+	Programmation générique
+Décisions - Comment on le veut
+	Ontologies
+===============================
+Interface générique
+  interface X<T> {T x(T t)}
+
+Classe générique
+  class X<T> {T x(T t) {}}
+  Peu utile pour des classes simples car, si T n'est pas contraint, on ne peut pas faire grand chose avec l'objet en dehors de le stocker et de le rendre.
+  Plus utile si on contraint T (méthodes connues) ou si on donne des opérations génériques à exécuter dessus (nécessite interface générique).
+
+Méthode générique
+  <T> T x(T t)
+  Quasi inutile sur les classes simples, car revient à utiliser le parent le plus haut si generics non explicite.
+  Quasi exclusivement avec des classes/interfaces génériques pour aligner leurs generics.
+
+
+--------------
+New generic interface > Multiple methods > Some methods must have same type > Create generics at interface level
+     X                        X                       X
+     X                        XXXXXXXXXXXX Single instance must be typed > Create generics at interface level
+     X                                                X
+     X                                     Go to "New generic method"
+New generic class
+     X
+New generic method > Several items must share same type > Type applies to a generic class/interface > You will explicit generics > Create generics at method level
+                              X                                        X                                      X
+                              XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Don't create generics, use most abstract type (MyClass) or wildcard (MyClass<?>)
+-----------------
