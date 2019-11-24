@@ -1,0 +1,579 @@
+\documentclass[draft]{beamer}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{textcomp}
+\usepackage{color}
+\usepackage{contour}
+\usepackage{ulem}
+\usepackage{natbib}
+\usepackage{pgf}
+\usepackage{xspace}
+\xspaceaddexceptions{]\}}
+\usepackage{multirow}
+\usepackage{tikz}
+\usetikzlibrary{calc,positioning,arrows}
+\usepackage{ulem}
+\usepackage{hyperref}
+\usepackage[absolute,overlay]{textpos}
+% \usepackage{beamerthemeshadow}
+\usetheme{Warsaw}
+\usepackage{lmodern}
+\usepackage{mathtools}
+% \everymath{\displaystyle}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{pbox}
+% \usepackage[final]{listingsutf8}
+\usepackage[french]{babel}
+\usepackage[final]{listings}
+\usepackage{courier}
+\usepackage[outdir=./]{epstopdf}
+\usepackage{ifdraft}
+\setkeys{Gin}{draft=false}% force the display of graphics, even for draft mode
+
+\lstset{
+  language=Java,
+  basicstyle=\lst@ifdisplaystyle\scriptsize\fi\ttfamily,
+  commentstyle=\color[RGB]{63,127,95}\bfseries,
+  keywordstyle=\color[RGB]{127,0,85},
+  morekeywords={int,char,double,float,unsigned,void,bool},
+  % Highlight some keywords
+  classoffset=1,
+  morekeywords={>,<},
+  otherkeywords={>,<},
+  keywordstyle=\color[RGB]{0,0,0}\bfseries,
+  classoffset=0,
+  % End highlight
+  numbers=left,
+  stepnumber=1,
+  showstringspaces=false,
+  tabsize=2,
+  breaklines=false,
+  escapeinside={§}{§},% similar to $, but not $ to allow math inside
+  literate=%
+    {à}{{\`a}}1
+    {é}{{\'e}}1
+    {è}{{\`e}}1
+    {ê}{{\^e}}1
+    {ï}{{\"i}}1
+}
+\definecolor{errorcolor}{RGB}{254,67,161}
+\makeatletter
+\def\uwave{\bgroup\markoverwith{\lower4\p@\hbox{\sixly \textcolor{errorcolor}{\char58}}}\ULon}
+\font\sixly=lasy8
+\makeatother
+\newcommand{\javaerror}[1]{%
+  \uwave{#1}%
+}
+
+\usetikzlibrary{positioning}
+\makeatletter
+\def\normaljustify{%
+  \let\\\@centercr
+  \rightskip\z@skip
+  \leftskip\z@skip%
+  \parfillskip=0pt plus 1.0fil\relax
+}
+\makeatother
+
+% \join{-}{1,2,3} = 1-2-3
+\makeatletter
+\DeclareRobustCommand\join[2]{%
+  \def\first{}%
+  \def\list{#2}%
+%   \@onelevel@sanitize\list%
+  \@for\reserved:=\list\do{%
+    \ifx\first\empty%
+      \def\first{done}%
+    \else%
+      #1%
+    \fi%
+    \reserved%
+  }
+}
+\makeatother
+
+\mode<presentation>{
+  \usetheme{Berlin}
+  \setbeamercovered{invisible}
+  \defbeamertemplate*{footline}{shadow theme}{
+    \leavevmode
+    \hbox{
+      \begin{beamercolorbox}[wd=\paperwidth,ht=2.5ex,dp=1.125ex,leftskip=.3cm,rightskip=.3cm plus1fil]{title in head/foot}%
+	\usebeamerfont{title in head/foot}\insertshorttitle%
+	\hfill%
+	\href{http://creativecommons.org/publicdomain/zero/1.0/}{\includegraphics[height=6pt]{../cc-zero}}%
+	\qquad%
+	\insertframenumber{}/{}\inserttotalframenumber%
+      \end{beamercolorbox}
+    }
+    \hbox{
+      \begin{beamercolorbox}[wd=\paperwidth,ht=2.5ex,dp=1.125ex,leftskip=.3cm plus1fil,rightskip=.3cm]{author in head/foot}
+	\usebeamerfont{author in head/foot}\insertshortauthor\hfill\insertshortinstitute
+      \end{beamercolorbox}
+    }
+    \vskip0pt
+  }
+%   \addtobeamertemplate{frametitle}{}{
+%     \begin{textblock*}{30mm}(.8\textwidth,-7mm)
+%       \includegraphics[height=6mm,keepaspectratio]{figures/logo-fbk}
+%       \hfill
+%       \includegraphics[height=6mm,keepaspectratio]{figures/logo-ict}
+%     \end{textblock*}
+%   }
+  \setbeamerfont*{itemize/enumerate body}{size=\normalsize}
+  \setbeamerfont*{itemize/enumerate subbody}{size=\footnotesize,shape=\itshape}
+%   \setbeamertemplate{frametitle}[shadow]
+}
+
+\AtBeginSection[]{
+  \begin{frame}
+  \vfill
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center,shadow=true,rounded=true]{title}
+    \usebeamerfont{title}\insertsectionhead\par%
+  \end{beamercolorbox}
+  \vfill
+  \end{frame}
+}
+
+\newcommand{\email}[1]{\href{mailto:#1}{\nolinkurl{#1}}}
+\DeclareRobustCommand{\todo}[1]{\ifdraft{\textbf{\textcolor{red}{[#1]}}}{}}
+\newcommand{\citecustom}[2]{#2 (\citeyear{#1})}
+\newcommand\credits[2][]{%
+  \ifx&#1&%
+  \def\x{}
+  \else%
+  \def\x{{#1}: }
+  \fi%
+  \begingroup%
+  \renewcommand\thefootnote{}\footnote{{\x}{\textcopyright}#2}%
+  \addtocounter{footnote}{-1}%
+  \endgroup%
+}
+\def\newblock{\hskip .11em plus .33em minus .07em} %trick to avoid undefined command with bibtex
+\def\randomSeed{1138}
+
+\title{Ontologies\todo{40min}}
+\author[Matthieu Vergne\qquad\email{matthieu.vergne@meritis.fr}]{
+  \texorpdfstring{
+    \textbf{Matthieu Vergne}
+  }{Matthieu Vergne}
+}
+\institute[Meritis PACA]{
+  Les Algorithmes - Aristote B\\
+  2000 Route des Lucioles\\
+  06901  Sophia Antipolis Cedex\\
+  ~\\
+  \includegraphics[height=15mm,keepaspectratio]{../logo-meritis.jpg}
+}
+\date{TBD}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}
+\frametitle{Outline}
+\tableofcontents[hideallsubsections]
+\end{frame}
+
+\section{Introduction}
+\subsection{}
+
+\begin{frame}
+\frametitle{Résumé}
+\begin{itemize}
+ \item \todo{}
+\end{itemize}
+\end{frame}
+
+\section{Généralités}
+\subsection{}
+
+\begin{frame}
+\frametitle{Objectifs d'une ontologie}
+\begin{exampleblock}{Représentation + cohérence}
+ Une ontologie définit des concepts et leurs relations.
+ Une ontologie valide est une ontologie cohérente.
+\end{exampleblock}
+\begin{alertblock}{Les concepts et relations sont totalement arbitraires}
+ Les méthodes de conceptions d'ontologies ne se préoccupe pas de savoir si les propriétés définies ont du sens.
+ C'est au concepteur de l'ontologie de s'assurer que celle-ci représente bien son domaine.
+\end{alertblock}
+\end{frame}
+
+\begin{frame}
+\frametitle{Exemples d'ontologies}
+Ontologies spécifiques :
+\begin{itemize}
+ \item Pizza : pizza, ingrédient, base, garniture, etc.\\
+       {\scriptsize\url{https://protege.stanford.edu/ontologies/pizza/pizza.owl}}
+ \item Automobile : véhicule, puissance, carburant, vitesse, etc.\\
+       {\footnotesize\url{https://schema.org/docs/automotive.html}}
+ \item Java : interface, variable, méthode, thread, etc.\\
+       {\footnotesize\url{https://doi.org/10.1007/978-3-642-33642-3_16}}
+\end{itemize}
+Ontologies génériques (fondamentales) :
+\begin{itemize}
+ \item Dolce : parties, qualités, temps, espace, etc.\\
+       {\footnotesize\url{http://www.loa.istc.cnr.it/dolce/overview.html}}
+ \item UFO : types, roles, quantités, relations, etc.\\
+       {\footnotesize\url{http://dev.nemo.inf.ufes.br/seon/UFO.html}}
+\end{itemize}
+\end{frame}
+
+\section{Programmation de bibliothèque}
+\subsection{}
+
+\begin{frame}
+\frametitle{Intérêt des ontologies}
+Ontologies liées au domaine d'application :
+\begin{itemize}
+ \item Ontologies spécifiques fournissent des concept/relations pertinents à coder
+ \item Ontologies génériques aident à abstraire
+\end{itemize}
+~\\
+Pratiques ontologiques : \onslide<2->{\textcolor{red}{$\leftarrow$ focus de la présentation}}
+\begin{itemize}
+ \item Fournit des méthodes de conception génériques
+ \item Permet de challenger le design de la bibliothèque
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Terminologie}
+\begin{description}
+ \item[Entité] Élément quelconque.\\
+      {\footnotesize\textit{Ex: John, Mary}}
+ \item[Propriété P] Attribut d'une entité.\\
+      {\footnotesize\textit{Ex: John est une personne, John est marié à Mary}}
+ \item[Instance de P] Entité ayant la propriété P.\\
+      {\footnotesize\textit{Ex: John et Mary sont des instances de ``est une personne''}}
+\end{description}
+\begin{alertblock}{Instance ontologique $\neq$ instance Java}
+ Pour la notion d'instance, on s'appuyera sur le contexte : instance d'une propriété vs. instance d'une classe.
+\end{alertblock}
+\end{frame}
+
+\begin{frame}
+\frametitle{Exemples Java}
+\def\classA{\lstinline{Chat}\xspace}
+\def\classB{\lstinline{Chien}\xspace}
+\def\instA{\lstinline{kitty}\xspace}
+\def\instB{\lstinline{rex}\xspace}
+\def\field{\lstinline{nom}\xspace}
+\begin{itemize}
+ \item Les classes \classA et \classB définissent un champs \field
+       \\$\rightarrow$ \classA et \classB ont la propriété ``définit un \field''
+ \item \instA est une instance de \classA
+       \\$\rightarrow$ \instA a les propriétés ``est un \classA'' + ``a un \field''
+ \item \instB est une instance de \classB
+       \\$\rightarrow$ \instB a les propriétés ``est un \classB'' + ``a un \field''
+ \item ``a un \field'' est une propriété commune
+       \\$\rightarrow$ \instA et \instB sont des instances de cette propriété
+ \item ``est un \classA'' + ``a un \field'' = ``est un \classA nommé''
+       \\$\rightarrow$ \instA a la propriété ``est un \classA nommé''
+       \\$\rightarrow$ toute instance de \classA a la propriété ``est un \classA nommé''
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Points importants}
+\begin{itemize}
+ \item Une propriété peut être de n'importe quelle nature :
+ \begin{itemize}
+  \item être l'instance d'une classe
+  \item définir un champs/une méthode
+  \item avoir un champs à une valeur particulière
+  \item implémenter une méthode particulière d'une interface
+  \item combinaison d'autres propriétés
+  \item etc.
+ \end{itemize}
+ \item Une propriété s'applique indépendamment des classes
+ \begin{itemize}
+  \item \lstinline{kitty} et \lstinline{rex} sont des instances de classes différentes, mais sont instances de la même propriété ``a un \lstinline{nom}''
+ \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Méta-propriétés}
+\begin{itemize}
+ \item Méta-propriété : propriété qui s'applique à une autre propriété
+ \begin{itemize}
+  \item Ex: ``est un \lstinline{Chat}'' est incompatible avec ``est un \lstinline{Chien}''
+ \end{itemize}
+ \item Ces méta-propriétés impactent la conception de bibliothèques
+ \begin{itemize}
+  \item Chaque incohérence d'une bibliothèque réduit sa réutilisabilité
+ \end{itemize}
+ \item Certaines méta-propriétés sont génériques
+ \begin{itemize}
+  \item Appliquables à n'importe quelle bibliothèque
+ \end{itemize}
+ \item Nous en couvriront 3 :
+ \begin{description}
+  \item[Rigidité] propriété essentielle d'une instance
+  \item[Identité] propriété identifiant l'instance
+  \item[Unité] propriété indécoupable
+  \item \todo{Dépendance? Permanence? Réalité?}
+ \end{description}
+\end{itemize}
+\end{frame}
+
+\section{Rigidité}
+\subsection{}
+
+\begin{frame}
+\frametitle{Définition}
+\framesubtitle{\cite{goos_ontological_2000,staab_overview_2004}}
+\begin{itemize}
+ \item Une entité peut avoir des propriétés essentielles
+ \begin{itemize}
+  \item Ex. : John a nécessairement un cœur.
+ \end{itemize}
+ \item Une propriété essentielle ne change pas
+ \begin{itemize}
+  \item Ex. : le cœur de John peut être remplacé, mais il doit en avoir un.
+ \end{itemize}
+ \item Rigidité : propriété essentielle pour toutes ses instances
+ \begin{itemize}
+  \item Ex. : tout être humain doit forcément avoir un cœur.
+ \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Exemple Java}
+\def\class{\lstinline{C}\xspace}
+\def\prop{``est un \class''\xspace}
+Instanciation d'une classe \class :
+\begin{itemize}
+ \item Une instance de \class a la propriété \prop
+ \item Cette propriété ne peut pas lui être retirée
+ \begin{itemize}
+  \item On ne peut que créer une nouvelle instance d'une autre classe
+ \end{itemize}
+ \item \prop est donc une propriété essentielle
+ \item Toute entité avec cette propriété est une instance de \class
+ \item Cette propriété est donc essentielle pour toutes ses instances
+ \item \prop est donc une propriété rigide
+\end{itemize}
+~\\
+Les contraintes statiques du langage imposent des propriétés rigides :
+\begin{itemize}
+ \item avoir un champs spécifique
+ \item avoir une méthode spécifique
+ \item avoir un champs constant à une valeur spécifique
+ \item etc.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Types de rigidité}
+Une propriété peut être :
+\begin{description}
+ \item[Rigide] essentielle à toutes ses instances
+ \item[Non-rigide] essentielle ou non, selon l'instance
+ \item[Anti-rigide] essentielle pour aucune instance
+\end{description}
+~\\
+Exemples de propriétés non-rigides :
+\begin{itemize}
+ \item avoir un \lstinline{Optional} vide
+ \begin{itemize}
+  \item Essentiel pour une implémentation vide, sinon non
+ \end{itemize}
+ \item \todo{...}
+ \begin{itemize}
+  \item Essentiel pour \todo{...}, sinon non
+ \end{itemize}
+\end{itemize}
+~\\
+Exemples de propriétés anti-rigide :
+\begin{itemize}
+ \item contenu d'une file d'attente (e.g. \lstinline{Queue})
+ \item résultat de \lstinline{Random.nextInt()}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Impacts}
+\def\pa{$P$\xspace}
+\def\pb{$P'$\xspace}
+\def\ca{$\{P_i\}$\xspace}
+\def\cb{$\{P'_i\}$\xspace}
+\def\ia{$P_i$\xspace}
+\def\ib{$P'_i$\xspace}
+Contexte :
+\begin{itemize}
+ \item Étant donné une propriété \pa ayant des instances \ca
+ \item Une sous-propriété \pb a un ensemble d'instances \cb $\subset$ \ca
+\end{itemize}
+~\\
+Si \pa est rigide :
+\begin{itemize}
+ \item aucune instance \ia ne peut sortir de \ca
+ \item \pb peut être rigide (\cb fixe) ou non (\cb varie dans \ca)
+\end{itemize}
+~\\
+Si \pa est anti-rigide :
+\begin{itemize}
+ \item toutes les instances \ia peuvent sortir de \ca
+ \item \pb doit être anti-rigide : chaque \ib doit pouvoir sortir de \cb pour sortir de \ca
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile,allowframebreaks]
+\frametitle{Exemple ``$P$ anti-rigide $\Rightarrow$ $P'$ anti-rigide''}
+\begin{lstlisting}
+class Parent {
+  String x;
+  
+  String getX() {
+    return x;
+  }
+  
+  void setX(String x) {
+    this.x = x;
+  }
+}
+
+class Enfant extends Parent {
+  @Override
+  void setX(String x) {
+    throw new RuntimeException("opération interdite");
+  }
+}
+\end{lstlisting}
+\pagebreak
+\begin{alertblock}{\lstinline{Enfant} ne respecte pas l'anti-rigidité de \lstinline{Parent} sur \lstinline{x}}
+ En ayant une variable de type \lstinline{Parent}, le code peut échouer à l'exécution si c'est une instance de \lstinline{Enfant}.
+\end{alertblock}
+\begin{exampleblock}{Inverser la hiérarchie}
+ Il vaut mieux partir d'une valeur rigide (immuable) et la transformer en valeur anti-rigide (muable) que l'inverse.
+\end{exampleblock}
+\begin{itemize}
+ \item Problème observable avec \lstinline{Collection}, \lstinline{Map}, \lstinline{Iterator}, et bien d'autres
+ \begin{itemize}
+  \item \lstinline{Collections.unmodifiableXxx(x)} casse l'anti-rigidité
+ \end{itemize}
+ \item Préferrer créer des interfaces/classes immuables et les étendre pour les rendre muables.
+\end{itemize}
+
+\end{frame}
+
+\section{Identité}
+\subsection{}
+
+\begin{frame}
+\frametitle{Définition}
+\framesubtitle{\cite{goos_ontological_2000,staab_overview_2004}, \citecustom{noauthor_ontoclean_2019}{Wikipédia}}
+\begin{description}
+ \item[Identité] Ses instances s'identifient de la même manière.\\
+      {\footnotesize\textit{Ex: code ISBN, numéro de sécurité sociale, etc.}}
+\end{description}
+\todo{...}
+\end{frame}
+
+\section{Unité}
+\subsection{}
+
+\begin{frame}
+\frametitle{Définition}
+\framesubtitle{\cite{goos_ontological_2000,staab_overview_2004}, \citecustom{noauthor_ontoclean_2019}{Wikipédia}}
+\begin{description}
+ \item[Unité] Une instance de la classe ne peut pas être décomposée en instances de la même classe.\\
+      {\footnotesize\textit{Ex: statue d'argile (unité) vs. tas d'argile (\sout{unité})}}
+\end{description}
+\todo{...}
+\end{frame}
+
+\section{Impacts sur du code Java}
+\subsection{}
+
+\begin{frame}
+\frametitle{Piège equals()}
+\begin{itemize}
+ \item Redéfinir equals() autrement que pour optimisation est une erreur.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Piège override}
+\begin{itemize}
+ \item Seulement si fonctionnellement équivalent (e.g. optimisation, décoration)
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Piège "carré est un rectangle"}
+\begin{itemize}
+ \item Que des getters = OK
+ \item Dès que setters = KO
+\end{itemize}
+Explication pour piège du equals() ?
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+\frametitle{Piège "id dans objet"}
+\begin{itemize}
+ \item ID n'existe que pour différencier plusieurs objets
+ \item Propriété du contexte dans lequel l'objet se trouve, pas de l'objet lui-même
+ \item Si changement de contexte, ID peut apparaître/disparaître/changer
+ \item Exemple :
+ \begin{itemize}
+  \item contexte plus large impose ID plus grand
+  \item typiquement concaténation (e.g. category-subcategory-instance)
+  \item ID devrait pouvoir être infiniment grand/complété, jamais fixe
+ \end{itemize}
+\end{itemize}
+\todo{Exemple commun : n° sécu, n° fiscal, n° passeport, n° téléphone, adresse e-mail, etc. représentent le même individu.
+Un identifiant est un moyen simple d'identifier un individu, mais ce n'est pas une propriété essentielle de l'individu.
+L'absence de ces identifiants n'implique pas l'absence de l'individu.
+De plus, la multiplicité de ces identifiants met en lumière que l'identifiant dépend de la perspective prise sur l'individu.
+Perspective sécu nécessite n° sécu, perspective fiscale n° fiscal, etc.
+Tant qu'on se limite à une unique perspective, choisir de stocker l'ID dans l'objet représentant l'individu et de l'utiliser comme propriété d'identité est une question de choix de design.
+Dès lors que cet objet doit être partagé entre plusieurs perspectives, ce choix devient une erreur de design.
+De manière générale, il est préférable de ne pas stocker l'identifiant dans l'objet identifié, à moins de prendre l'hypothèse volontaire que cet objet n'existera que dans une unique perspective.}
+\end{frame}
+
+\section{Conclusion}
+\subsection{}
+
+\begin{frame}
+\frametitle{Points importants}
+\begin{itemize}
+ \item \todo{}
+\end{itemize}
+\todo{Autre méta-propriété : dépendance.
+L'existence de l'instance présuppose l'existence d'une autre instance.
+Ex: un étudiant a forcément un professeur.
+Notion peu claire, donc non décrite ici, mais à étudier pour voir si utile.}
+\todo{\cite{welty_towards_2005} ajoute les méta-propriétés permanence et réalité (actuality en anglais).}
+\end{frame}
+
+\begin{frame}
+\frametitle{Aller plus loin}
+\todo{Autre méta-propriété : dépendance.
+L'existence de l'instance présuppose l'existence d'une autre instance.
+Ex: un étudiant a forcément un professeur.
+Notion peu claire, donc non décrite ici, mais à étudier pour voir si utile.}
+\todo{\cite{welty_towards_2005} ajoute les méta-propriétés permanence et réalité (actuality en anglais).}
+\end{frame}
+
+\appendix
+\newcounter{finalframe}
+\setcounter{finalframe}{\value{framenumber}}
+
+\begin{frame}[allowframebreaks]{Bibliography}
+\bibliographystyle{plainnat-fr}
+\bibliography{bibliography}
+\end{frame}
+
+\setcounter{framenumber}{\value{finalframe}}
+\end{document}
