@@ -1,0 +1,840 @@
+\documentclass[draft]{beamer}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{textcomp}
+\usepackage{color}
+\usepackage{contour}
+\usepackage{ulem}
+\usepackage{natbib}
+\usepackage{pgf}
+\usepackage{xspace}
+\xspaceaddexceptions{]\}}
+\usepackage{multirow}
+\usepackage{tikz}
+\usetikzlibrary{calc,positioning,arrows}
+\usepackage{ulem}
+\usepackage{hyperref}
+\usepackage[absolute,overlay]{textpos}
+% \usepackage{beamerthemeshadow}
+\usetheme{Warsaw}
+\usepackage{lmodern}
+\usepackage{mathtools}
+% \everymath{\displaystyle}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{pbox}
+% \usepackage[final]{listingsutf8}
+\usepackage[french]{babel}
+\usepackage[final]{listings}
+\usepackage{courier}
+\usepackage[outdir=./]{epstopdf}
+\usepackage{ifdraft}
+\setkeys{Gin}{draft=false}% force the display of graphics, even for draft mode
+
+\lstset{
+  language=Java,
+  basicstyle=\lst@ifdisplaystyle\scriptsize\fi\ttfamily,
+  commentstyle=\color[RGB]{63,127,95}\bfseries,
+  keywordstyle=\color[RGB]{127,0,85},
+  morekeywords={int,char,double,float,unsigned,void,bool},
+  % Highlight some keywords
+  classoffset=1,
+  morekeywords={>,<},
+  otherkeywords={>,<},
+  keywordstyle=\color[RGB]{0,0,0}\bfseries,
+  classoffset=0,
+  % End highlight
+  numbers=left,
+  stepnumber=1,
+  showstringspaces=false,
+  tabsize=2,
+  breaklines=false,
+  escapeinside={§}{§},% similar to $, but not $ to allow math inside
+  literate=%
+    {à}{{\`a}}1
+    {é}{{\'e}}1
+    {è}{{\`e}}1
+    {ê}{{\^e}}1
+    {ï}{{\"i}}1
+    {ô}{{\^o}}1
+}
+\definecolor{errorcolor}{RGB}{254,67,161}
+\makeatletter
+\def\uwave{\bgroup\markoverwith{\lower4\p@\hbox{\sixly \textcolor{errorcolor}{\char58}}}\ULon}
+\font\sixly=lasy8
+\makeatother
+\newcommand{\javaerror}[1]{%
+  \uwave{#1}%
+}
+
+\usetikzlibrary{positioning}
+\makeatletter
+\def\normaljustify{%
+  \let\\\@centercr
+  \rightskip\z@skip
+  \leftskip\z@skip%
+  \parfillskip=0pt plus 1.0fil\relax
+}
+\makeatother
+
+% \join{-}{1,2,3} = 1-2-3
+\makeatletter
+\DeclareRobustCommand\join[2]{%
+  \def\first{}%
+  \def\list{#2}%
+%   \@onelevel@sanitize\list%
+  \@for\reserved:=\list\do{%
+    \ifx\first\empty%
+      \def\first{done}%
+    \else%
+      #1%
+    \fi%
+    \reserved%
+  }
+}
+\makeatother
+
+\mode<presentation>{
+  \usetheme{Berlin}
+  \setbeamercovered{invisible}
+  \defbeamertemplate*{footline}{shadow theme}{
+    \leavevmode
+    \hbox{
+      \begin{beamercolorbox}[wd=\paperwidth,ht=2.5ex,dp=1.125ex,leftskip=.3cm,rightskip=.3cm plus1fil]{title in head/foot}%
+	\usebeamerfont{title in head/foot}\insertshorttitle%
+	\hfill%
+	\href{http://creativecommons.org/publicdomain/zero/1.0/}{\includegraphics[height=6pt]{../cc-zero}}%
+	\qquad%
+	\insertframenumber{}/{}\inserttotalframenumber%
+      \end{beamercolorbox}
+    }
+    \hbox{
+      \begin{beamercolorbox}[wd=\paperwidth,ht=2.5ex,dp=1.125ex,leftskip=.3cm plus1fil,rightskip=.3cm]{author in head/foot}
+	\usebeamerfont{author in head/foot}\insertshortauthor\hfill\insertshortinstitute
+      \end{beamercolorbox}
+    }
+    \vskip0pt
+  }
+%   \addtobeamertemplate{frametitle}{}{
+%     \begin{textblock*}{30mm}(.8\textwidth,-7mm)
+%       \includegraphics[height=6mm,keepaspectratio]{figures/logo-fbk}
+%       \hfill
+%       \includegraphics[height=6mm,keepaspectratio]{figures/logo-ict}
+%     \end{textblock*}
+%   }
+  \setbeamerfont*{itemize/enumerate body}{size=\normalsize}
+  \setbeamerfont*{itemize/enumerate subbody}{size=\footnotesize,shape=\itshape}
+%   \setbeamertemplate{frametitle}[shadow]
+}
+
+\AtBeginSection[]{
+  \begin{frame}
+  \vfill
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center,shadow=true,rounded=true]{title}
+    \usebeamerfont{title}\insertsectionhead\par%
+  \end{beamercolorbox}
+  \vfill
+  \end{frame}
+}
+
+\newcommand{\email}[1]{\href{mailto:#1}{\nolinkurl{#1}}}
+\DeclareRobustCommand{\todo}[1]{\ifdraft{\textbf{\textcolor{red}{[#1]}}}{}}
+\newcommand\credits[2][]{%
+  \ifx&#1&%
+  \def\x{}
+  \else%
+  \def\x{{#1}: }
+  \fi%
+  \begingroup%
+  \renewcommand\thefootnote{}\footnote{{\x}{\textcopyright}#2}%
+  \addtocounter{footnote}{-1}%
+  \endgroup%
+}
+\def\newblock{\hskip .11em plus .33em minus .07em} %trick to avoid undefined command with bibtex
+\def\randomSeed{1138}
+
+\title{Programmation générique\todo{40min}}
+\author[Matthieu Vergne\qquad\email{matthieu.vergne@meritis.fr}]{
+  \texorpdfstring{
+    \textbf{Matthieu Vergne}
+  }{Matthieu Vergne}
+}
+\institute[Meritis]{
+  Les Algorithmes - Aristote B\\
+  2000 Route des Lucioles\\
+  06901  Sophia Antipolis Cedex\\
+  ~\\
+  \includegraphics[height=15mm,keepaspectratio]{../logo-meritis.jpg}
+}
+\date{TBD}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}
+\frametitle{Outline}
+\tableofcontents[hideallsubsections]
+\end{frame}
+
+\section{Introduction}
+\subsection{}
+
+\begin{frame}
+\frametitle{Résumé}
+\begin{itemize}
+ \item \todo{}
+\end{itemize}
+\end{frame}
+
+\section{Polymorphisme}
+\subsection{}
+
+\begin{frame}
+\frametitle{Définition}
+\begin{itemize}
+ \item Grec ancien : \textit{polús} (plusieurs) + \textit{morphê} (forme)
+ \item Objectif : avoir les même interactions malgré des types différents
+ \item Il existe différents types de polymorphismes
+ \item Chaque langage peut l'implémenter à sa manière
+\end{itemize}
+\todo{articles scientifiques ?}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Inclusion}
+Appliquer la même méthode à un ensemble de types :
+\begin{lstlisting}
+// Accepte un InputStream
+int consumeAndCount(InputStream stream) throws IOException {
+  int byteCounter = 0;
+  while (stream.read() != -1) {byteCounter++;}
+  return byteCounter;
+}
+
+// ByteArrayInputStream est inclus dans InputStream par héritage
+byte[] bytes = new byte[] { 1, 2, 3 };
+ByteArrayInputStream bytesStream = new ByteArrayInputStream(bytes);
+int bytesSize = consumeAndCount(bytesStream); // bytesSize = 3
+
+// FileInputStream est inclus dans InputStream par héritage
+File file = createFileWithContent("abcde");
+FileInputStream fileStream = new FileInputStream(file);
+int fileSize = consumeAndCount(fileStream); // fileSize = 5
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Surcharge}
+Réécrire la même méthode pour un autre type :
+\begin{lstlisting}
+// Méthode sur int
+int enlève(int a, int b) {
+  return b - a;
+}
+
+// Méthode sur String
+String enlève(String a, String b) {
+  return b.replace(a, "");
+}
+
+// Méthode applicable à int et String
+int x    = enlève(3, 5);       // 5 - 3 = 2
+String s = enlève("b", "abc"); // abc - b = ac
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Coercition}
+Convertir un type pour appliquer les méthodes d'un autre type :
+\begin{lstlisting}
+// Opération sur float
+float somme(float a, float b) {
+  return a + b;
+}
+
+// Coercition d'int en float
+int a = 1, b = 1;
+float result = somme(a, b); // coercition implicite int §$\rightarrow$§ float
+int c = (int) result;       // coercition explicite float §$\rightarrow$§ int
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Paramétrique}
+Adapter les types d'une méthode selon son utilisation :
+\begin{lstlisting}
+// Le type de sortie dépend du type de liste
+<T> T extrait(int index, List<T> list) {
+  return list.get(index);
+}
+
+// T = Integer
+Integer i = extrait(1, Arrays.asList(1, 2, 3)); // i = 2
+
+// T = String
+String s = extrait(1, Arrays.asList("a", "b", "c")); // s = "b"
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}
+\frametitle{Hiérarchie de polymorphismes}
+\framesubtitle{\cite{cardelli_understanding_1985}}
+Le polymorphisme peut être :
+\begin{itemize}
+ \item<1-> ad hoc (manuel, par du code)
+ \begin{itemize}
+  \item<2->[Avantage] s'applique à n'importe quel type
+  \item<2->[Inconvénient] nouveau type $\Rightarrow$ code supplémentaire
+  \item<2-> surcharge $\Rightarrow$ ajoute méthode
+  \item<2-> coercition $\Rightarrow$ ajoute cast/transformation
+ \end{itemize}
+ \item<1-> universel (automatique, par le langage)
+ \begin{itemize}
+  \item<3->[Avantage] s'applique sans code supplémentaire
+  \item<3->[Inconvénient] uniquement les types compatibles
+  \item<3-> inclusion $\Rightarrow$ héritage/autoboxing/varargs\footnote<3->{Les varargs peuvent être considérés comme de l'autoboxing entre liste homogène de paramètres et tableau.}
+  \item<3-> paramétrique $\Rightarrow$ generics
+ \end{itemize}
+\end{itemize}
+\end{frame}
+
+\section{Programmation générique}
+\subsection{}
+
+\begin{frame}
+\frametitle{Définition}
+\begin{itemize}
+ \item Principe : abstraire les structures de données pour obtenir des algorithmes réutilisables
+ \item Idéal : algorithmes applicables à n'importe quelle structure de données pertinente
+ \item Particulièrement adapté à la création de bibliothèques réutilisables
+ \item Se focalise sur le polymorphisme universel
+ \begin{itemize}
+  \item Polymorphisme ad hoc nécessite du code pour chaque nouveau type
+  \item Inacceptable pour une bibliothèque
+ \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+\frametitle{Abstraction}
+\framesubtitle{\cite{goos_generic_1989}}
+4 types d'abstractions :\todo{see Table 1 for summary}
+\begin{itemize}
+ \item Données
+ \begin{itemize}
+  \item \todo{data types and sets of operations defined on them, independently of their actual implementation}
+  \item \todo{Another degree of abstractness is achieved by the type of elements being stored is a generic formal parameter}
+  \item \todo{program only a few such data abstractions directly, those necessary to create some fundamental data representations}
+  \item \todo{Most other data abstractions obtained by combining existing data abstractions packages with packages from the structural or representational classes defined below}
+ \end{itemize}
+ \item Algorithmique
+ \begin{itemize}
+  \item \todo{families of data abstractions that have a set of efficient algorithms in common}
+  \item \todo{called ``generic algorithms''}
+ \end{itemize}
+ \item Structurel
+ \begin{itemize}
+  \item \todo{with respect to a given set of algorithmic abstractions}
+  \item \todo{more detailed structures (intersections of data abstractions) leading to more specific and numerous operations (less generic algorithms)}
+ \end{itemize}
+ \item Représentationel
+ \begin{itemize}
+  \item \todo{mappings between structural abstractions}
+ \end{itemize}
+\end{itemize}
+\todo{"parameterized programming" approach advocated by \cite{goguen_parameterized_1984} focus on how to manipulate theories, we focus on building useful theories to manipulate}
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+\frametitle{Abstraction de données}
+\framesubtitle{\cite{musser_library_1987}}
+\todo{now}
+\todo{\cite{musser_library_1987} Generic algorithm: abstracts away from details of representation and basic operations, defined by few primitive operations considered as parameters. Plug in actual operations to obtain specific instances of algorithms for specific data structures.}
+\end{frame}
+
+\begin{frame}[allowframebreaks,fragile]
+\frametitle{Abstraction algorithmique}
+\framesubtitle{\cite{goos_generic_1989}}
+\begin{itemize}
+ \item \todo{Abstract away concrete representation and express algorithm in terms of the smallest possible number of generic operations.}
+ \item \todo{For particular representation, instantiate generic access operations as subprograms accessing representation.}
+ \item \todo{Example: sequence, with operations to sequentially traverse a data abstraction}
+ \item \todo{Application: singly linked lists, doubly linked lists, vectors, trees, etc.}
+ \item \todo{Few generic operations: finding, accumulating, counting, etc.}
+ \item \todo{Non generic way: index all elements of sequence with natural numbers}
+ \item \todo{Generic way: generic indexing through \lstinline{coordinate}, which corresponds to natural numbers for vectors, cells for linked lists.}
+ \item \todo{\lstinline{Coordinate} Functions:}
+ \begin{itemize}
+  \item \todo{$Initial: Sequence \rightarrow Coordinate$}
+  \item \todo{$Next: Coordinate \rightarrow Coordinate$}
+  \item \todo{$Is_End: Sequence \times Coordinate \rightarrow boolean$}
+  \item \todo{$Ref: Sequence \times Coordinate \rightarrow Element$}
+ \end{itemize}
+ \newpage
+ \item \todo{Example generic implementation of \lstinline{Find}}
+ \begin{lstlisting}
+// S = séquence, C = coordonnée
+public interface AlgorithmesSurSéquence<S, C> {
+  // Accès génériques
+  C débutDe(S séquence);
+  C suivantDe(C coordonnée);
+  boolean estFin(S séquence, C coordonnée);
+
+  // Critère de test pour la recherche
+  interface Test<S, C> {
+    boolean passe(S séquence, C coordonnée);
+  }
+
+  // Algorithme générique de recherche
+  default Optional<C> chercher(S séquence, Test<S, C> test) {
+    C coordonnée = débutDe(séquence);
+    while (!estFin(séquence, coordonnée)) {
+      if (test.passe(séquence, coordonnée)) {
+        return Optional.of(coordonnée);
+      }
+      coordonnée = suivantDe(coordonnée);
+    }
+    return Optional.empty();
+  }
+}
+ \end{lstlisting}
+ \newpage
+ \item \todo{Implementation for arrays:}
+ \begin{lstlisting}
+AlgorithmesSurSéquence<Object[], Integer> algosTableau =
+    new AlgorithmesSurSéquence<Object[], Integer>() {
+  Integer débutDe(Object[] a) {return 0;}
+  Integer suivantDe(Integer i) {return i+1;}
+  boolean estFin(Object[] a, Integer i) {return a.length == i;}
+};
+
+Object[] tableau = new Object[] {1, 2, 3, 4, 5};
+
+Optional<Integer> index1 = algosTableau.chercher(tableau,
+    (a, i) -> a[i] == (Integer) 3);
+System.out.println(index1); // Optional[2]
+
+Optional<Integer> index2 = algosTableau.chercher(tableau,
+    (a, i) -> a[i] == (Integer) 8);
+System.out.println(index2); // Optional.empty
+ \end{lstlisting}
+ \newpage
+ \item \todo{Implementation for \lstinline{List}:}
+ \begin{lstlisting}
+AlgorithmesSurSéquence<List<?>, Integer> algosListe2 =
+    new AlgorithmesSurSéquence<List<?>, Integer>() {
+  Integer débutDe(List<?> l) {return 0;}
+  Integer suivantDe(Integer i) {return i+1;}
+  boolean estFin(List<?> l, Integer i) {return l.size() == i;}
+};
+
+List<String> liste = Arrays.asList("a", "b", "c");
+
+Optional<Integer> index1 = algosListe2.chercher(liste,
+    (l, i) -> l.get(i) == "b");
+System.out.println(index1); // Optional[1]
+
+Optional<Integer> index2 = algosListe2.chercher(liste,
+    (l, i) -> l.get(i) == "f");
+System.out.println(index2); // Optional.empty
+ \end{lstlisting}
+ \newpage
+ \item \todo{Implementation for custom linked list:}
+ \begin{lstlisting}
+AlgorithmesSurSéquence<Cell, Cell> algosListe =
+    new AlgorithmesSurSéquence<Cell, Cell>() {
+  Cell débutDe(Cell c0) {return c0;}
+  Cell suivantDe(Cell c) {return c.suivant;}
+  boolean estFin(Cell c0, Cell c) {return c.suivant == null;}
+};
+
+Cell cA = new Cell("a"), cB = new Cell("b"), cC = new Cell("c");
+cA.suivant = cB; cB.suivant = cC;
+
+Optional<Cell> index1 = algosListe.chercher(cA,
+    (c0, c) -> c.valeur == "b");
+System.out.println(index1); // Optional[Cell[b]]
+
+Optional<Cell> index2 = algosListe.chercher(cA,
+    (c0, c) -> c.valeur == "f");
+System.out.println(index2); // Optional.empty
+ \end{lstlisting}
+ \newpage
+ \item \todo{Not applicable to cases having no ``coordinate'', like stacks or queues, only to cases where we can iterate without side effects and use something as a coordinate}
+ \item \todo{Specification and verification: similar to Dijkstra's idea of weakest pre-conditions [3], obtain strong statement about result with as few assumptions as possible}
+ \item \todo{Goal: consider variety of possible post-conditions + maximize number of different models (abstract data types) under which algorithm attains given post-condition}
+ \item \todo{Proof theory: how to prove various post-conditions under variety of assumptions about generic parameters, so that later we can easily prove correctness of wide variety of instances.}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+\frametitle{Abstraction structurelle}
+\framesubtitle{\cite{musser_library_1987}}
+\todo{now}
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+\frametitle{Abstraction représentaionelle}
+\framesubtitle{\cite{musser_library_1987}}
+\todo{now}
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+\frametitle{Quotes}
+\cite{goos_generic_1989}:
+\begin{quote}
+ Generic programming centers around the idea of abstracting from concrete, effcient algorithms to obtain generic algorithms that can be combined with different data representations to produce a wide variety of useful software.
+ For example, a class of generic sorting algorithms can be defined which work with finite sequences but which can be instantiated in different ways to produce algorithms working on arrays or linked lists.
+\end{quote}
+\newpage
+A. Stepanov (\cite{lo_russo_stlport:_1997}):
+\begin{quote}
+ Generic programming is a programming method that is based in finding the most abstract representations of efficient algorithms.
+ That is, you start with an algorithm and find the most general set of requirements that allows it to perform and to perform efficiently.
+ [...]
+ Generic programming assumes that there are some fundamental laws that govern the behavior of software components and that it is possible to design interoperable modules based on these laws.
+ It is also possible to use the laws to guide our software design.
+\end{quote}
+\newpage
+\cite{giovannelli_programming_2013}
+\begin{itemize}
+ \item Programming style in which algorithms are written at the broadest, most abstract possible level, independent of the form of the data on which these algorithms will be carried out.
+ \item Purely abstract programming model that is totally independent of any given programming language, rather than a specific implementation detail
+ \item Often, generic programming reduced to parametric polymorphism
+ \item Very similar languages can (and often do) have very different genericity mechanisms
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\cite{giovannelli_programming_2013}}
+Interests:
+\begin{itemize}
+ \item How design decisions are made in a programming language?
+ \item What kinds of concerns influence these decisions?
+ \item How do certain constraints shape implementation details?
+ \item How does this ultimately affect a finished programming language?
+\end{itemize}
+Focus on generic programming, especially parametric polymorphism although some aspects of inclusion and coercion.
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+\frametitle{\cite{giovannelli_programming_2013}}
+\framesubtitle{History}
+\begin{itemize}
+ \item Roots in 1970s
+ \item Thought to maximize productivity through code re-use 
+ \item Expect higher-quality code by focusing on algorithms rather than implementation details
+ \item 
+ \item 
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\cite{giovannelli_programming_2013}}
+\framesubtitle{Pros \& Cons}
+\begin{exampleblock}{Help to:}
+ \begin{itemize}
+  \item Reduce code by favoring reuse
+  \item Facilitate code validation by working on less code
+  \item \todo{Me: Establish conventions by using the same code where applicable}
+ \end{itemize}
+\end{exampleblock}
+\begin{alertblock}{Require to:}
+ \begin{itemize}
+  \item \todo{Me: Abstract from data specifics (e.g. type)}
+  \item \todo{Me: Favor general practices}
+  \item \todo{Me: Master the domain to be modeled}
+ \end{itemize}
+\end{alertblock}
+\end{frame}
+
+\begin{frame}
+\frametitle{\cite{giovannelli_programming_2013}}
+\framesubtitle{Generic programming in C++}
+\begin{itemize}
+ \item 
+ \item 
+ \item 
+ \item 
+ \item 
+ \item 
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\cite{giovannelli_programming_2013}}
+\framesubtitle{Generic programming in Java}
+\begin{itemize}
+ \item 
+ \item 
+ \item 
+ \item 
+ \item 
+ \item 
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\cite{giovannelli_programming_2013}}
+\framesubtitle{Generic programming in C\#}
+\begin{itemize}
+ \item 
+ \item 
+ \item 
+ \item 
+ \item 
+ \item 
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\cite{giovannelli_programming_2013}}
+\framesubtitle{Balance}
+\begin{itemize}
+ \item Flexibility
+ \item Code re-use
+ \item Type-safety
+ \item Performance
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\cite{giovannelli_programming_2013}}
+\framesubtitle{Generic programming in Haskell}
+\begin{itemize}
+ \item 
+ \item 
+ \item 
+ \item 
+ \item 
+\end{itemize}
+\end{frame}
+
+\section{Pièges de la programmation générique}
+\subsection{}
+
+\begin{frame}[fragile]
+\frametitle{Programmation générique $\neq$ types génériques}
+\begin{onlyenv}<+>
+  \begin{alertblock}{Focus sur les structures de données}
+    Un débutant commence généralement par créer des types de données génériques.
+    C'est une mauvaise habitude de POO.
+  \end{alertblock}
+  \begin{exampleblock}{Focus sur les méthodes}
+    Plus une méthode est générique, plus elle est simple.
+    Une méthode très générique n'a généralement même pas besoin de type concret.
+    C'est d'autant plus vrai en Java depuis l'acquisition des lambda (Java 8) qui permettent d'abstraire les méthodes des objets.
+  \end{exampleblock}
+\end{onlyenv}
+\begin{onlyenv}<+>
+  Structure de graphe générique :
+  \begin{lstlisting}
+interface Noeud {
+  Object valeur();
+  Collection<Lien> liens();
+}
+interface Lien {
+  Noeud noeudGauche();
+  Noeud noeudDroit();
+}
+  \end{lstlisting}
+\end{onlyenv}
+\begin{onlyenv}<+>
+  Parcours de graphe sur structure :
+  \begin{lstlisting}
+Set<Noeud> récupérerVoisins(Noeud départ) {
+  Set<Noeud> noeudsTrouvés = new HashSet<>();
+  List<Noeud> noeudsAParcourir = new LinkedList<>();
+  noeudsAParcourir.add(départ);
+  while (!noeudsAParcourir.isEmpty()) {
+    Noeud noeud = noeudsAParcourir.remove(0);
+    if (noeudsTrouvés.add(noeud)) {
+      for (Lien lien : noeud.liens()) {
+        noeudsAParcourir.add(lien.noeudGauche());
+        noeudsAParcourir.add(lien.noeudDroit());
+      }
+    }
+  }
+  return noeudsTrouvés;
+}
+  \end{lstlisting}
+\end{onlyenv}
+\begin{onlyenv}<+>
+  Utilisation :
+  \begin{lstlisting}
+// Structure spécifique
+MyClass a = new MyClass("a"), [...], c = new MyClass("c");
+a.voisin = b; b.voisin = c; c.voisin = a;
+
+// Conversion vers structure générique
+NoeudImpl na = new NoeudImpl(a), [...], nc = new NoeudImpl(c);
+na.lier(nb); nb.lier(nc); nc.lier(na);
+
+// Récupération générique
+Set<Noeud> nvoisins = récupérerVoisins(na);
+
+// Conversion vers structure spécifique
+List<Object> voisins = nvoisins.stream().map(Noeud::valeur)
+                             .collect(Collectors.toList());
+  \end{lstlisting}
+\end{onlyenv}
+\begin{onlyenv}<+>
+  Parcours de graphe sans structure:
+  \begin{lstlisting}
+<N> Set<N> récupérerVoisins(N départ,
+                            Function<N, Set<N>> lireVoisins) {
+  Set<N> noeudsTrouvés = new HashSet<>();
+  List<N> noeudsAParcourir = new LinkedList<>();
+  noeudsAParcourir.add(départ);
+  while (!noeudsAParcourir.isEmpty()) {
+    N noeud = noeudsAParcourir.remove(0);
+    if (noeudsTrouvés.add(noeud)) {
+      noeudsAParcourir.addAll(lireVoisins.apply(noeud));
+    }
+  }
+  return noeudsTrouvés;
+}
+  \end{lstlisting}
+  \begin{itemize}
+   \item[-] Ajoute \lstinline{Function<N, Set<N>>}
+   \item[+] Retire interfaces (\lstinline{Noeud}, \lstinline{Lien})
+   \item[+] Simplifie code (pas de notion de lien)
+  \end{itemize}
+\end{onlyenv}
+\begin{onlyenv}<+>
+  Utilisation :
+  \begin{lstlisting}
+// Structure spécifique
+MyClass a = new MyClass("a"), [...], c = new MyClass("c");
+a.voisin = b; b.voisin = c; c.voisin = a;
+
+// Récupération générique
+Set<MyClass> voisins =
+    récupérerVoisins(a, noeud -> Collections.singleton(noeud.voisin));
+  \end{lstlisting}
+  \begin{itemize}
+   \item[-] Ajoute implém. {\lstinline{Function<MyClass, Set<MyClass>>}}
+   \item[+] Retire conversion vers structure générique avant calcul
+   \item[+] Retire conversion vers structure spécifique après calcul
+   \item[+] Retire implémentations (\lstinline{NoeudImpl}, \lstinline{LienImpl})
+  \end{itemize}
+\end{onlyenv}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Programmation générique $\neq$ polymorphisme paramétrique}
+\begin{onlyenv}<+>
+  \begin{alertblock}{Réduire au polymorphisme paramétrique}
+    Toute recherche sur la programmation générique amène principalement à des informations sur l'abstraction de types (polymorphisme paramétrique).
+    Les mots clés ``java programmation générique'' amènent à des articles sur les generics.
+  \end{alertblock}
+  \begin{exampleblock}{Élargir au polymorphisme universel}
+    La programmation générique inclus le polymorphisme paramétrique (generics) mais aussi par inclusion (héritage/autoboxing).
+  \end{exampleblock}
+\end{onlyenv}
+\begin{onlyenv}<+>
+  Exemple :
+  \begin{lstlisting}
+class Logger {
+  boolean activated;
+  void log(Object obj) {
+    if (activated) {
+      System.out.println(obj);
+    }
+  }
+}
+
+Response processRequest(Request request) {
+  logger.log(request);
+  Response response = f(request);
+  logger.log(response);
+  return response;
+}
+  \end{lstlisting}
+  Nul besoin de generics pour faire une méthode de log très générique.
+\end{onlyenv}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Programmation générique $\neq$ generics + héritage}
+\begin{onlyenv}<+>
+  \begin{alertblock}{Confusion outils/objectifs}
+    Generics et héritage ne sont que des outils. Ils peuvent être utilisés pour faire plein de choses. Y compris des bétises.
+  \end{alertblock}
+  \begin{exampleblock}{Programmation générique $=$ maximiser la réutilisation}
+    Il est important de choisir un design correct et une implémentation qui garantie la réutilisation.
+  \end{exampleblock}
+\end{onlyenv}
+\begin{onlyenv}<+>
+  Abus de generics :
+  \begin{lstlisting}
+<T> T ajoute(T a, T b) {
+  Object result;
+  if (a instanceof String) {result = (String) a + (String) b;}
+  if (a instanceof Integer) {result = (int) a + (int) b;}
+  if (a instanceof Double) {result = (double) a + (double) b;}
+  else {throw new RuntimeException("unmanaged type");}
+  return (T) result;
+}
+  \end{lstlisting}
+  Le generics \lstinline{T} cache du polymorphisme ad hoc.
+  Le polymorphisme universel apparent ne respecte pas ses promesses de réutilisabilité.
+  Une surcharge de méthode serait plus honnête et permettrait des contrôles à la compilation et un code plus concis.
+\end{onlyenv}
+\begin{onlyenv}<+>
+  Abus d'héritage :
+  \begin{lstlisting}
+class Rectangle {
+  double longueur, largeur;
+  
+  double périmètre() {return 2 * (longueur + largeur);}
+  double surface()   {return longueur * largeur;}
+}
+class Carré extends Rectangle {
+  Carré(double côté) {
+    longueur = côté;
+    largeur = côté;
+  }
+}
+  \end{lstlisting}
+  Permet des opérations invalides comme :\\
+  \lstinline{carre.longueur = carre.largeur + 2;}\\
+  Un design par composition est plus correct.
+\end{onlyenv}
+\end{frame}
+
+\section{Conclusion}
+\subsection{}
+
+\begin{frame}
+\frametitle{Points importants}
+\begin{itemize}
+ \item \todo{(ici ? ontologie ?) Insister sur la cohérence des scopes : on n'abstrait pas un domaine à moitié. Notamment :\\
+- on ne prend pas d'argument du domaine externe\\
+- on ne retourne pas de résultat du domaine externe\\
+On définit une abstraction dont l'interface s'appuie uniquement sur le domaine interne.}
+ \item \todo{http://stepanovpapers.com/}
+\end{itemize}
+\end{frame}
+
+\appendix
+\newcounter{finalframe}
+\setcounter{finalframe}{\value{framenumber}}
+
+\begin{frame}[allowframebreaks]{Bibliography}
+\bibliographystyle{plainnat-fr}
+\bibliography{bibliography}
+\end{frame}
+
+\begin{frame}
+\frametitle{Summary}
+\todo{todo}
+\end{frame}
+
+\setcounter{framenumber}{\value{finalframe}}
+\end{document}
