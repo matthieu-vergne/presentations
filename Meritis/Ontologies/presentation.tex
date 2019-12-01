@@ -21,17 +21,18 @@
 \usepackage{lmodern}
 \usepackage{mathtools}
 % \everymath{\displaystyle}
+\usepackage{amsmath}
 \usepackage{algorithm}
 \usepackage{algorithmic}
 \usepackage{pbox}
 % \usepackage[final]{listingsutf8}
 \usepackage[french]{babel}
-\usepackage[final]{listings}
 \usepackage{courier}
 \usepackage[outdir=./]{epstopdf}
 \usepackage{ifdraft}
 \setkeys{Gin}{draft=false}% force the display of graphics, even for draft mode
 
+\usepackage[final]{listings}
 \lstset{
   language=Java,
   basicstyle=\lst@ifdisplaystyle\scriptsize\fi\ttfamily,
@@ -58,6 +59,18 @@
     {ê}{{\^e}}1
     {ï}{{\"i}}1
 }
+% http://tex.stackexchange.com/q/43526
+% fix the apparently deliberate but undocumented behaviour of disabling escapes other than mathescape in TextStyle (used by \lstinline)
+% there may be a good reason why this is disabled by default, so beware in case it causes any problems
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd{\lsthk@TextStyle}{\let\lst@DefEsc\@empty}{}{}{\errmessage{failed to patch}}
+\makeatother
+\newcommand{\lstexpand}[1]{%
+ \edef\y{\noexpand\lstinline{#1}}% expand only content of lstinline
+ \y%                               execute lstinline
+}
+
 \definecolor{errorcolor}{RGB}{254,67,161}
 \makeatletter
 \def\uwave{\bgroup\markoverwith{\lower4\p@\hbox{\sixly \textcolor{errorcolor}{\char58}}}\ULon}
@@ -349,26 +362,27 @@ Pratiques ontologiques : \onslide<2->{\textcolor{red}{$\leftarrow$ focus de la p
 
 \begin{frame}
 \frametitle{Exemple Java}
+\def\instance{\lstinline{i}\xspace}
 \def\class{\lstinline{C}\xspace}
 \def\prop{``est un \class''\xspace}
 Instanciation d'une classe \class :
 \begin{itemize}
- \item Une instance de \class a la propriété \prop
+ \item Une instance \instance de \class a la propriété \prop
  \item Cette propriété ne peut pas lui être retirée
  \begin{itemize}
   \item On ne peut que créer une nouvelle instance d'une autre classe
  \end{itemize}
- \item \prop est donc une propriété essentielle
+ \item \prop est donc une propriété essentielle de \instance
  \item Toute entité avec cette propriété est une instance de \class
  \item Cette propriété est donc essentielle pour toutes ses instances
  \item \prop est donc une propriété rigide
 \end{itemize}
 ~\\
-Les contraintes statiques du langage imposent des propriétés rigides :
+Les propriétés statiques du langage sont rigides :
 \begin{itemize}
- \item avoir un champs spécifique
- \item avoir une méthode spécifique
- \item avoir un champs constant à une valeur spécifique
+ \item avoir un champs \lstinline{x} (imposée par la classe)
+ \item avoir une méthode \lstinline{x()} (imposée par la classe)
+ \item avoir un champs constant \lstinline{x=="foo"} (imposée par \lstinline{final})
  \item etc.
 \end{itemize}
 \end{frame}
@@ -384,20 +398,20 @@ Une propriété peut être :
 ~\\
 Exemples de propriétés non-rigides :
 \begin{itemize}
- \item avoir un \lstinline{Optional} vide
+ \item avoir un champs de type \lstinline{Optional} vide
  \begin{itemize}
-  \item Essentiel pour une implémentation vide, sinon non
+  \item Essentiel pour instance vide, pas pour instance muable
  \end{itemize}
- \item \todo{...}
+ \item \lstinline{Supplier.get()} retourne \lstinline{"foo"}
  \begin{itemize}
-  \item Essentiel pour \todo{...}, sinon non
+  \item Essentiel si accesseur sur constante, pas sur champs muable
  \end{itemize}
 \end{itemize}
 ~\\
-Exemples de propriétés anti-rigide :
+Exemples de propriétés anti-rigides :
 \begin{itemize}
- \item contenu d'une file d'attente (e.g. \lstinline{Queue})
  \item résultat de \lstinline{Random.nextInt()}
+ \item contenu d'une file d'attente (e.g. \lstinline{Queue})
 \end{itemize}
 \end{frame}
 
@@ -412,59 +426,98 @@ Exemples de propriétés anti-rigide :
 Contexte :
 \begin{itemize}
  \item Étant donné une propriété \pa ayant des instances \ca
- \item Une sous-propriété \pb a un ensemble d'instances \cb $\subset$ \ca
+ \item Une sous-propriété \pb a des instances \cb $\subseteq$ \ca
 \end{itemize}
 ~\\
-Si \pa est rigide :
+Si \pa est non-rigide, \ia peut sortir ou non de \ca
 \begin{itemize}
- \item aucune instance \ia ne peut sortir de \ca
- \item \pb peut être rigide (\cb fixe) ou non (\cb varie dans \ca)
+ \item \pb rigide (\cb fixe) ou non (\ib sort de \cb, voire de \ca)
+\end{itemize}
+Si \pa est rigide, \ia doit rester dans \ca
+\begin{itemize}
+ \item \pb rigide (\cb fixe) ou non (\ib sort de \cb, pas de \ca)
+\end{itemize}
+Si \pa est anti-rigide, \ia doit pouvoir sortir de \ca
+\begin{itemize}
+ \item \pb anti-rigide (\ib doit sortir de \cb pour sortir de \ca)
 \end{itemize}
 ~\\
-Si \pa est anti-rigide :
-\begin{itemize}
- \item toutes les instances \ia peuvent sortir de \ca
- \item \pb doit être anti-rigide : chaque \ib doit pouvoir sortir de \cb pour sortir de \ca
-\end{itemize}
+\begin{center}
+ \textbf{$P$ anti-rigide $\Rightarrow$ $P'$ anti-rigide}
+\end{center}
 \end{frame}
 
-\begin{frame}[fragile,allowframebreaks]
-\frametitle{Exemple ``$P$ anti-rigide $\Rightarrow$ $P'$ anti-rigide''}
+\begin{frame}[fragile]
+\frametitle{Exemple Java}
+\def\Parent{Parent}
+\def\Enfant{Enfant}
 \begin{lstlisting}
-class Parent {
-  String x;
-  
-  String getX() {
-    return x;
-  }
-  
-  void setX(String x) {
-    this.x = x;
-  }
+class §\Parent§ {
+  private String s;
+  String getS() {return s;}
+  void setS(String s) {this.s = s;}
 }
-
-class Enfant extends Parent {
-  @Override
-  void setX(String x) {
-    throw new RuntimeException("opération interdite");
-  }
+class §\Enfant§ extends §\Parent§ {
+  Enfant(String s) {super.setS(s);}
+  void setS(String s) {throw new UnsupportedOperationException();}
 }
 \end{lstlisting}
-\pagebreak
-\begin{alertblock}{\lstinline{Enfant} ne respecte pas l'anti-rigidité de \lstinline{Parent} sur \lstinline{x}}
- En ayant une variable de type \lstinline{Parent}, le code peut échouer à l'exécution si c'est une instance de \lstinline{Enfant}.
+\newcommand{\mathListing}[1]{\ensuremath{\text{\lstexpand{#1}}}}
+\def\pa{\mathListing{x instanceof \Parent}}
+\def\pb{\mathListing{x instanceof \Enfant}}
+\def\pc{\mathListing{x.s="foo"}}
+\def\pd{\ensuremath{\text{\lstinline{s} muable dans \lstexpand{\Parent}}}}
+\def\pe{\ensuremath{\text{\lstinline{s} immuable dans \lstexpand{\Enfant}}}}
+\only<1-2>{\small\begin{align*}
+ &P(x) = \pa \wedge \pc \\
+ &P'(x) = \pb \wedge \pc \\
+ &\pb \Rightarrow \pa & \text{(héritage Java)} \\
+ &P'(x) = P(x) \wedge \pb \Rightarrow P' \subset P \\
+ &\pd \Rightarrow \text{$P$ anti-rigide} \Rightarrow \textbf<2>{\text{$P'$ anti-rigide}} & \text{(setter \lstexpand{\Parent})} \\
+ &\pe \Rightarrow \textbf<2>{\text{$P'$ rigide}} \only<2>{\Rightarrow \text{contradiction}} & \text{(setter \lstexpand{\Enfant})} \\
+\end{align*}
+}
+\only<3>{
+\begin{alertblock}{Contradiction \emph{logique} : $P'$ ne peut être rigide et anti-rigide}
+ \lstexpand{\Enfant} ne respecte pas l'anti-rigidité imposée par \lstexpand{\Parent}.
 \end{alertblock}
-\begin{exampleblock}{Inverser la hiérarchie}
- Il vaut mieux partir d'une valeur rigide (immuable) et la transformer en valeur anti-rigide (muable) que l'inverse.
-\end{exampleblock}
 \begin{itemize}
- \item Problème observable avec \lstinline{Collection}, \lstinline{Map}, \lstinline{Iterator}, et bien d'autres
+ \item Techniquement faisable : problème de design, pas de langage
+ \item Problème observable à l'exécution :
  \begin{itemize}
-  \item \lstinline{Collections.unmodifiableXxx(x)} casse l'anti-rigidité
+  \item appel \lstinline{setS(s)} sur variable \lstexpand{\Parent} échoue si instance de \lstinline{Enfant}
  \end{itemize}
- \item Préferrer créer des interfaces/classes immuables et les étendre pour les rendre muables.
+ \item  Bon design peut permettre contrôle à la compilation
 \end{itemize}
+}
+\end{frame}
 
+\begin{frame}
+\frametitle{Solution}
+\begin{exampleblock}{Ne pas être anti-rigide dès le départ}
+ Penser non-rigide avant anti-rigide :
+ \begin{itemize}
+  \item parent abstrait + enfant 1 rigide + enfant 2 anti-rigide
+  \item interface lecture, étendue avec écriture
+  \item interface lecture + interface écriture (+ interface combinée)
+ \end{itemize}
+\end{exampleblock}
+Problème présent de base en Java :
+\begin{itemize}
+ \item \lstinline{Collection} a un contenu variable (e.g. \lstinline{add}, \lstinline{remove})
+ \begin{itemize}
+  \item \lstinline{Collections.unmodifiableXxx(x)} et \lstinline{Arrays.asList(...)} l'empêchent (exceptions sur écriture)
+ \end{itemize}
+ \item \lstinline{Iterator} permet la suppression
+ \begin{itemize}
+  \item \lstinline{Iterator.remove(x)} génère une exception par défaut
+ \end{itemize}
+ \item Pas systématique :
+ \begin{itemize}
+  \item \lstinline{StringBuffer} = \lstinline{CharSequence} (lec.) + \lstinline{Appendable} (écr.)
+  \item \lstinline{Supplier} (lec.) et \lstinline{Consumer} (écr.)
+ \end{itemize}
+\end{itemize}
 \end{frame}
 
 \section{Identité}
