@@ -49,6 +49,7 @@
   numbers=left,
   stepnumber=1,
   showstringspaces=false,
+  keepspaces=true,
   tabsize=2,
   breaklines=false,
   escapeinside={§}{§},% similar to $, but not $ to allow math inside
@@ -525,12 +526,227 @@ Problème présent de base en Java :
 
 \begin{frame}
 \frametitle{Définition}
-\framesubtitle{\cite{goos_ontological_2000,staab_overview_2004}, \citecustom{noauthor_ontoclean_2019}{Wikipédia}}
-\begin{description}
- \item[Identité] Ses instances s'identifient de la même manière.\\
-      {\footnotesize\textit{Ex: code ISBN, numéro de sécurité sociale, etc.}}
-\end{description}
-\todo{...}
+\framesubtitle{\cite{guarino_identity_2000}\todo{\cite{goos_ontological_2000,staab_overview_2004}}}
+\begin{itemize}
+ \item Une entité peut avoir des propriétés caractéristiques
+ \begin{itemize}
+  \item Ex. : numéro de sécurité sociale de John.
+ \end{itemize}
+ \item Une propriété caractéristique appartient à une seule instance
+ \begin{itemize}
+  \item Ex. : John est le seul à avoir ce numéro de sécurité sociale.
+ \end{itemize}
+ \item Une propriété caractéristique peut être de tout type
+ \begin{itemize}
+  \item Ex. : numéro unique, login + pass, nom + adresse + naissance, etc.
+ \end{itemize}
+ \item Identité : modèle de propriétés caractéristiques permettant de différencier chaque instance
+ \begin{itemize}
+  \item Ex. : chaque assuré est identifié par son numéro de sécurité sociale.
+ \end{itemize}
+ \item Une propriété porte une identité si toutes ses instances s'identifient de la même manière
+ \begin{itemize}
+  \item Ex. : la propriété ``assuré'' porte une identité par son ``numéro de sécurité sociale''.
+ \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Exemple Java}
+\def\class{\lstinline{Véhicule}\xspace}
+\def\prop{\lstinline{VIN}\xspace}
+Identité d'un \class :
+\begin{itemize}
+%  \item \class est rigide : tout (non-)\class le reste\todo{utile ?}
+ \item La classe \class a un champs \prop
+ \begin{itemize}
+  \item VIN (Vehicule Identification Number) ou numéro de série
+ \end{itemize}
+%  \item \prop n'existe dans aucune classe parente (e.g. \lstinline{Engin})
+%  \begin{itemize}
+%   \item Une tondeuse n'est pas un véhicule, et donc n'a pas de VIN
+%  \end{itemize}
+ \item Chaque \prop est unique : chaque \class a le sien
+ \item La valeur de \prop est donc caractéristique de chaque instance
+ \item \class porte donc une identité par son champs \prop
+\end{itemize}
+~\\
+Quelques identités du langage :
+\begin{itemize}
+ \item \lstinline{Object} s'identifie par son emplacement mémoire (\lstinline{x == x})
+ \item \lstinline{Integer} s'identifie par sa valeur (\lstinline{42 == 42})
+ \item \lstinline{String} s'identifie par son contenu (\lstinline{"x" == "x"})
+ \item etc.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\lstinline{==} ou \lstinline{equals()} ?}
+\begin{alertblock}{Java impose l'interprétation de \lstinline{==}}
+ \begin{itemize}
+  \item Il ne permet que de retrouver les même instances Java
+  \item \small\lstinline{"x"=="x"} mais \lstinline{new String("x") != new String("x")}
+ \end{itemize}
+\end{alertblock}
+\begin{exampleblock}{\lstinline{equals()} offre une équivalence redéfinissable}
+ \begin{itemize}
+  \item \lstinline{==} par défaut, modifiable pour chaque classe
+  \item \scriptsize\lstinline{"x".equals("x")} et \lstinline{new String("x").equals(new String("x"))}
+ \end{itemize}
+\end{exampleblock}
+\begin{block}{Recommandation : préférer \lstinline{equals()} plutôt que \lstinline{==}}
+ \begin{itemize}
+  \item Large utilisation et support de base
+  \begin{itemize}
+   \item \lstinline{List.equals(x)}, \lstinline{Arrays.equals(a, b)}, \lstinline{Set.add(x)}, \lstinline{Objects.equals(a, b)}, \lstinline{Predicate.isEqual(x)}, etc.
+  \end{itemize}
+  \item Dépendance des méchaniques internes
+  \begin{itemize}
+   \item Redéfinition \lstinline{equals()} $\Rightarrow$ redéfinition \lstinline{hashcode()}
+  \end{itemize}
+ \end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Exemple Java (révisé)}
+Identités par \lstinline{==} révisées :
+\begin{itemize}
+ \item \lstinline{Object.equals()} basé sur son emplacement mémoire
+ \item \lstinline{Integer.equals()} basé sur sa valeur
+ \item \lstinline{String.equals()} basé sur son contenu
+ \item etc.
+\end{itemize}
+~\\
+Identités plus complexes :
+\begin{itemize}
+ \item \lstinline{Locale.equals()} basé sur ses champs langage, script, pays, variante et extensions (multiples données)
+ \item \lstinline{Map.equals()} basé sur ses clés-valeurs (dynamique)
+ \item \lstinline{List.equals()} sur ses éléments ordonnés (méta-donnée)
+ \item etc.
+\end{itemize}
+\end{frame}
+
+% \begin{frame}
+% \frametitle{Types d'identité}
+% Une identité peut être :
+% \begin{description}
+%  \item[équivalente] identité $\Leftrightarrow$ instance
+%  \item[suffisante] identité $\Rightarrow$ instance
+%  \item[nécessaire] identité $\Leftarrow$ instance
+%  \item[inexistante] pas d'identité
+% \end{description}
+% ~\\
+% Exemples d'identités suffisantes :
+% \begin{itemize}
+%  \item \todo{...}
+% \end{itemize}
+% Exemples d'identités nécessaires :
+% \begin{itemize}
+%  \item \todo{...}
+% \end{itemize}
+% Exemples d'identités inexistantes :
+% \begin{itemize}
+%  \item Aucun, tout a un emplamcement mémoire (``tout est \lstinline{Object}'')
+% \end{itemize}
+% \end{frame}
+
+\begin{frame}
+\frametitle{Impacts}
+\def\pa{$P$\xspace}
+\def\pb{$P'$\xspace}
+\def\ca{$\{P_i\}$\xspace}
+\def\cb{$\{P'_i\}$\xspace}
+\def\ia{$P_i$\xspace}
+\def\ib{$P'_i$\xspace}
+\def\ea{$\chi$\xspace}
+\def\eb{$\chi'$\xspace}
+Contexte :
+\begin{itemize}
+ \item Étant donné une propriété \pa ayant des instances \ca
+ \item Une sous-propriété \pb a des instances \cb $\subseteq$ \ca
+\end{itemize}
+~\\
+Si \pa porte une identité \ea
+\begin{itemize}
+ \item Tous les \ca sont différenciables par \ea
+ \item Tous les \cb sont donc aussi différenciables par \ea
+ \item \pb porte donc forcément l'identité \ea
+ \item \pb peut aussi porter une identité \eb spécifique
+\end{itemize}
+~\\
+\begin{center}
+ \textbf{$P$ porte identité $\chi$ $\Rightarrow$ $P'$ porte identité $\chi$}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Exemple Java}
+\def\Parent{Parent}
+\def\Enfant{Enfant}
+\begin{lstlisting}
+class Parent {  int a;
+  public boolean equals(Object obj) {
+    return ((Parent) obj).a == a;
+  }
+}
+class Enfant extends Parent {  int b;
+  public boolean equals(Object obj) {
+    return super.equals(obj) && ((Enfant) obj).b == b;
+  }
+}
+\end{lstlisting}
+\newcommand{\mathListing}[1]{\ensuremath{\text{\lstexpand{#1}}}}
+\def\pa{\mathListing{x instanceof \Parent}}
+\def\pb{\mathListing{x instanceof \Enfant}}
+\def\pd{\ensuremath{\text{\lstinline{a} différencie \lstexpand{\Parent}}}}
+\def\pe{\ensuremath{\text{(\lstinline{a},\lstinline{b}) différencie \lstexpand{\Enfant}}}}
+\only<1-2>{\small\begin{align*}
+ &P(x) = \pa \\
+ &P'(x) = \pb \Rightarrow P' \subset P & \text{(héritage Java)} \\
+ &\text{$P$ porte identité \lstinline{a}} \Rightarrow \textbf<2>{\text{$P'$ porte identité \lstinline{a}}} & \text{(equals \lstexpand{\Parent})} \\
+ &\text{$P'$ porte identité (\lstinline{a},\lstinline{b}) \only<2>{\textbf{mais plus \lstinline{a} seul}}} & \text{(equals \lstexpand{\Enfant})} \\
+\end{align*}
+}
+\only<3>{
+\begin{alertblock}{Contradiction \emph{logique} : $P'$ doit porter l'identité \lstinline{a}}
+ \lstexpand{\Enfant} ne respecte pas l'identité imposée par \lstexpand{\Parent}.
+\end{alertblock}
+\begin{itemize}
+ \item Techniquement faisable : problème de design, pas de langage
+ \item Problème observable à l'exécution :
+ \begin{itemize}
+  \item \lstinline{parent.equals(enfant) != enfant.equals(parent)}
+ \end{itemize}
+ \item  Bon design peut permettre contrôle à la compilation
+\end{itemize}
+}
+\end{frame}
+
+\begin{frame}
+\frametitle{Solution}
+\begin{exampleblock}{Ne pas redéfinir le \lstinline{equals()} d'un parent instanciable}
+ \begin{itemize}
+  \item définir uniquement le \lstinline{equals()} du parent
+  \item rendre le parent non-instanciable (constructeur non-public)
+  \item composition plutôt qu'héritage
+ \end{itemize}
+\end{exampleblock}
+Illustrations en Java :
+\begin{itemize}
+ \item \lstinline{AbstractList} le définit pour tous ses enfants
+ \begin{itemize}
+  \item \lstinline{ArrayList} et \lstinline{LinkedList} n'y touchent pas
+ \end{itemize}
+ \item \lstinline{Calendar} définit \lstinline{equals()} mais constructeur protégé
+ \begin{itemize}\scriptsize
+  \item \lstinline{GregorianCalendar} et \lstinline{JapaneseImperialCalendar} complètent
+ \end{itemize}
+ \item \small\lstinline{BigInteger.equals()} réutilisé par \lstinline{BigDecimal.equals()}
+ \begin{itemize}
+  \item Deux \lstinline{Number}, mais pas d'héritage entre les deux
+ \end{itemize}
+\end{itemize}
 \end{frame}
 
 \section{Unité}
